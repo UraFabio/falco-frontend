@@ -59,7 +59,7 @@ const Ciclo: React.FC = () => {
   const navigate = useNavigate();
 
   const [modalLogoutOpen, setModalLogoutOpen] = useState(false);
-  const { ciclo } = location.state || {};
+  const { materia, conteudo, subConteudo, ciclo } = location.state || {};
   const [videoUrl, setVideoUrl] = useState('');
   const [questoes, setQuestoes] = useState<Questao[]>([]);
   const [mostrarSecao, setMostrarSecao] = useState('video');
@@ -119,6 +119,7 @@ const Ciclo: React.FC = () => {
     }));
   };
 
+  
 
   // Handle answer selection
   const handleSelectResposta = (questaoId: number, alternativaIndex: number) => {
@@ -173,6 +174,7 @@ const Ciclo: React.FC = () => {
     setEstadoQuestoes(estadoAtualizado);
 
     if (todasCorretas) {
+      console.log(materia)
       setMostrarSecao('finalizado');
       try {
         const response = await fetch(`${API_URL}/aluno/falcoins`, {
@@ -185,10 +187,28 @@ const Ciclo: React.FC = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Erro de autenticação');
+          throw new Error(`Erro ao atualizar falcoins do aluno ${usuario.nome_completo}`);
         }
       } catch (error: any) {
         console.log(error)
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/aluno/todo`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ usuario_id: usuario.id, cicloId: ciclo.id }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro ao excluir ciclo ${ciclo.nome} da lista de todo`);
+        }
+
+      } catch (error) {
+
       }
 
     } 
@@ -346,11 +366,13 @@ const Ciclo: React.FC = () => {
 
         {/* Finalizado */}
         {mostrarSecao === 'finalizado' && (
-          <div className="text-center mt-8">
-            <span className="text-2xl font-bold mb-4 block">Parabéns! Você passou</span>
-            <Button variant="contained" color="primary" onClick={() => navigate('/aluno')}>
-              Voltar para tela inicial
-            </Button>
+          <div className="text-center h-[calc(100vh-12rem)] m-4 p-20 bg-slate-400 bg-opacity-50 rounded-lg">
+            <div className='bg-white rounded-lg h-full p-14'>
+              <span className="text-2xl font-bold mb-8 block">Parabéns! Você conseguiu!</span>
+              <Button variant="contained" color="primary" onClick={() => navigate('/aluno')}>
+                Voltar para tela inicial
+              </Button>
+            </div>
           </div>
         )}
       </div>

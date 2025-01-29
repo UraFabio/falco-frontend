@@ -59,7 +59,7 @@ const AdminDashboard: React.FC = () => {
 
   
   
-  const handleCloseSnackBar = (reason?: string) => {
+  const handleCloseSnackBar = (_?: React.SyntheticEvent | Event,reason?: string) => {
     if (reason === "clickaway") {
       return;
     }
@@ -484,10 +484,10 @@ const AdminDashboard: React.FC = () => {
       <Snackbar
         open={openSnackBar}
         autoHideDuration={3000}
-        onClose={() => handleCloseSnackBar}
+        onClose={handleCloseSnackBar}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert onClose={() => handleCloseSnackBar()} severity="success" sx={{ width: "100%" }}>
+        <Alert onClose={handleCloseSnackBar} severity="success" sx={{ width: "100%" }}>
           Criado com sucesso!
         </Alert>
       </Snackbar>

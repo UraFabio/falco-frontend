@@ -10,6 +10,9 @@ import todo_white from '../../assets/todo_white.svg'
 import todo_green from '../../assets/todo_green.svg'
 import star_white from '../../assets/star_white.svg'
 import star_yellow from '../../assets/star.svg'
+import arrow_blue from '../../assets/arrow_blue_right.svg'
+
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -65,6 +68,7 @@ const SubConteudosCiclos: React.FC = () => {
   ativo: true,
   habilidadesabnt: ''
   });
+  const [selectedSubConteudo, setSelectedSubConteudo] = useState({})
 
   // Fetch data
   useEffect(() => {
@@ -121,8 +125,9 @@ const SubConteudosCiclos: React.FC = () => {
 
 
   // Função para abrir o modal
-  const handleOpenModal = (ciclo:Ciclo) => {
+  const handleOpenModal = (subConteudo: any, ciclo:Ciclo) => {
     setSelectedCiclo(ciclo);  // Armazena o ciclo selecionado
+    setSelectedSubConteudo(subConteudo)
     setCicloModal(true);  // Abre o modal
   };
 
@@ -141,9 +146,9 @@ const SubConteudosCiclos: React.FC = () => {
   };
 
   // Handle ciclo click
-  const handleCicloClick = (ciclo: Ciclo | null) => {
+  const handleCicloClick = (subConteudo: any, ciclo: Ciclo | null) => {
 
-    navigate('/aluno/ciclo', { state : { ciclo }})
+    navigate('/aluno/ciclo', { state : { materia, conteudo, subConteudo, ciclo }})
   }
 
   
@@ -300,12 +305,21 @@ const SubConteudosCiclos: React.FC = () => {
         <h2 className="text-white text-2xl font-bold mb-4">Sub-conteúdos de {conteudo.nome}</h2>
 
         {subConteudos.map((subConteudo) => (
-          <div key={subConteudo.sub_conteudo_id} className="mb-4">
+          <div key={subConteudo.sub_conteudo_id} className="px-4 mt-4 w-full">
             <div
-              className="flex flex-row bg-white p-4 rounded shadow cursor-pointer"
+              className="flex flex-row bg-slate-300 p-4 rounded shadow mb-1 cursor-pointer w-2/4"
               onClick={() => toggleSection(subConteudo.sub_conteudo_id)}
             >
-              <h3 className="text-xl font-bold">{subConteudo.sub_conteudo_nome}</h3>
+              <h3 className="text-xl font-bold flex items-center">
+                      <img
+                        src={arrow_blue}
+                        alt='seta azul'
+                        className={`h-5 inline-block transform transition-transform duration-300 ${
+                          expandedSections[subConteudo.sub_conteudo_id] ? 'rotate-90' : 'rotate-0'
+                        }`}
+                      />
+                      <span className="ml-2">{subConteudo.sub_conteudo_nome}</span>
+                    </h3>
             </div>
 
             {expandedSections[subConteudo.sub_conteudo_id] && (
@@ -314,7 +328,7 @@ const SubConteudosCiclos: React.FC = () => {
                 <li key={ciclo.id} className="flex justify-between bg-azulFalcao p-2 rounded mb-2 shadow">
                   <div
                     className='cursor-pointer'
-                    onClick={() => handleOpenModal(ciclo)}
+                    onClick={() => handleOpenModal(subConteudo, ciclo)}
                   >
                     {`Ciclo ${index + 1} - ${ciclo.nome}`}
                   </div>
@@ -329,32 +343,34 @@ const SubConteudosCiclos: React.FC = () => {
           </div>
         ))}
 
+        
         {/* Modal para mostrar detalhes do ciclo */}
-      <Modal
-        open={cicloModal}
-        onClose={handleCloseModal}
-        aria-labelledby="modal-title"
-        aria-describedby="modal-description"
-        className="flex items-center justify-center"
-      >
-        <div className="modal-container bg-white p-6 rounded-lg shadow-lg">
-          <h2 id="modal-title">Detalhes do Ciclo</h2>
-          <div className="modal-content">
-            <p><strong>Título:</strong> {selectedCiclo?.nome}</p>
-            <p><strong>Descrição:</strong> {selectedCiclo?.descricao}</p>
-            <p><strong>Objetivo:</strong> {selectedCiclo?.objetivo}</p>
-            <p><strong>Requisitos:</strong> {selectedCiclo?.requisitos}</p>
-            <p><strong>Habilidaes ABNT:</strong> {selectedCiclo?.habilidadesabnt}</p>
+        <Modal
+          open={cicloModal}
+          onClose={handleCloseModal}
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
+          className="flex w-2/3 items-center justify-center m-auto"
+        >
+          <div className="modal-container bg-slate-300 p-6 rounded-lg shadow-lg">
+            <div className='flex flex-col items-center m-auto'>
+              <h2 id="modal-title" className='text-2xl'><strong>{selectedCiclo?.nome}</strong></h2>
+              <button
+                className='flex justify-center items-center w-28 h-16 my-7 bg-white rounded-2xl border border-black hover:scale-110 transition-all'
+                onClick={() => handleCicloClick(selectedSubConteudo, selectedCiclo)} // Chama a função ao clicar
+                >
+                <img  className='w-10' src={arrow_blue} alt="" />
+              </button>
+            </div>
+            <div className="flex flex-col gap-4">
+              <p><strong>Descrição:</strong> {selectedCiclo?.descricao}</p>
+              <p><strong>Objetivo:</strong> {selectedCiclo?.objetivo}</p>
+              <p><strong>Requisitos:</strong> {selectedCiclo?.requisitos}</p>
+              { selectedCiclo?.habilidadesabnt ? <p><strong>Habilidades BNCC:</strong> {selectedCiclo?.habilidadesabnt}</p> : ''}
+              
+            </div>
           </div>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => handleCicloClick(selectedCiclo)} // Chama a função ao clicar
-          >
-            Confirmar Ciclo
-          </Button>
-        </div>
-      </Modal>
+        </Modal>
       </div>
 
       {/* Logout Modal */}

@@ -408,7 +408,7 @@ const AlunoDashboard: React.FC = () => {
                         src={arrow_blue}
                         alt='seta azul'
                         className={`h-5 inline-block transform transition-transform duration-300 ${
-                          expandedSectionsTodo[subConteudo.sub_conteudo_id] ? 'rotate-90' : 'rotate-0'
+                          expandedSectionsFavoritos[subConteudo.sub_conteudo_id] ? 'rotate-90' : 'rotate-0'
                         }`}
                       />
                       <span className="ml-2">{subConteudo.sub_conteudo_nome}</span>
