@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Adiciona uma imagem de fundo à página */
+body {
+  height: 100vh;
+
+  background-image: url('./sala_01.jpg'); /* Caminho relativo à pasta 'src' */
+  background-size: cover; /* Faz a imagem cobrir toda a tela */
+  background-position: center; /* Centraliza a imagem */
+  background-repeat: no-repeat; /* Evita repetição da imagem */
+  background-attachment: fixed; /* Faz a imagem permanecer fixa ao rolar a página */
+
+  background-color: rgba(0, 0, 0, 0.65); /* Preto com 65% de opacidade */
+  background-blend-mode: overlay; /* Combina a cor de fundo com a imagem */
+
+  padding: 2rem;
+}
+
+.sombra-azul {
+  text-shadow: 0px 1px 6px #00C2FF;
+}
+
+.sombra-preta {
+  text-shadow: -1px 1px 2px #000000;
+}
+
+.sombra-botao {
+  box-shadow: -1px 1px 4px #000000;
+}
