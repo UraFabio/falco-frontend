@@ -6,6 +6,7 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import coins from '../assets/coins.svg';
 import logo from '../assets/logo-no-bg.png';
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface Usuario {
   ano_escolar: any;
@@ -58,7 +59,7 @@ const AdminDashboard: React.FC = () => {
 
   
   
-  const handleCloseSnackBar = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  const handleCloseSnackBar = (reason?: string) => {
     if (reason === "clickaway") {
       return;
     }
@@ -72,21 +73,21 @@ const AdminDashboard: React.FC = () => {
     
       try {
         const [materiasRes, funcionariosRes, alunosRes] = await Promise.all([
-          fetch('http://192.168.1.211:3000/api/admin/materias', {
+          fetch(`${API_URL}/admin/materias`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
           }),
-          fetch('http://192.168.1.211:3000/api/admin/funcionarios', {
+          fetch(`${API_URL}/admin/funcionarios`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
           }),
-          fetch('http://192.168.1.211:3000/api/admin/alunos', {
+          fetch(`${API_URL}/admin/alunos`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -147,7 +148,7 @@ const AdminDashboard: React.FC = () => {
 
       const token = localStorage.getItem('token');
 
-      const response = await fetch('http://192.168.1.211:3000/api/admin/materias', {
+      const response = await fetch(`${API_URL}/admin/materias`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, },
         body: JSON.stringify({ nome: novaMateria }),
@@ -196,7 +197,7 @@ const AdminDashboard: React.FC = () => {
 
       console.log('usuarioParaCriar: ', usuarioParaCriar)
   
-      const response = await fetch(`http://192.168.1.211:3000/api/admin/${endpoint}`, {
+      const response = await fetch(`${API_URL}/admin/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, },
         body: JSON.stringify(usuarioParaCriar),
@@ -233,17 +234,17 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const onCloseModal = () => {
-    setModalMateriaOpen(false); 
-    setErrorMessage('')
-  }
+  // const onCloseModal = () => {
+  //   setModalMateriaOpen(false); 
+  //   setErrorMessage('')
+  // }
 
   const handleToggleAtivo = async (id: number, ativo: boolean, perfil: string) => {
     try {
       const token = localStorage.getItem('token');
       
       const endpoint = perfil === 'aluno' ? 'alunos' : 'funcionarios';
-      const response = await fetch(`http://192.168.1.211:3000/api/admin/${endpoint}`, {
+      const response = await fetch(`${API_URL}/admin/${endpoint}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, },
         body: JSON.stringify({ id, ativo: !ativo }),
@@ -254,7 +255,7 @@ const AdminDashboard: React.FC = () => {
         throw new Error('Erro ao atualizar status do usuário');
       }
   
-      const updatedUser = await response.json();
+      //const updatedUser = await response.json();
   
       // Atualizar o estado local
       if (perfil === 'instrutor' || perfil === 'administrador') {
@@ -338,7 +339,7 @@ const AdminDashboard: React.FC = () => {
                   className="flex flex-col items-center justify-end font-semibold text-md bg-white p-4 rounded shadow text-center cursor-pointer hover:bg-gray-100"
                   onClick={() => handleMateriaClick(materia)}
                 >
-                  <img src={"../../public/"+materia.imagem_url} alt="" />
+                  <img src={"/"+materia.imagem_url} alt="" />
                   {materia.nome}
                 </button>
                 ))}
@@ -483,10 +484,10 @@ const AdminDashboard: React.FC = () => {
       <Snackbar
         open={openSnackBar}
         autoHideDuration={3000}
-        onClose={handleCloseSnackBar}
+        onClose={() => handleCloseSnackBar}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert onClose={handleCloseSnackBar} severity="success" sx={{ width: "100%" }}>
+        <Alert onClose={() => handleCloseSnackBar()} severity="success" sx={{ width: "100%" }}>
           Criado com sucesso!
         </Alert>
       </Snackbar>

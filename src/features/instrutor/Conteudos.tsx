@@ -7,6 +7,8 @@ import Box from '@mui/material/Box';
 import coins from '../../assets/coins.svg';
 import logo from '../../assets/logo-no-bg.png';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 interface Usuario {
   ano_escolar: any;
@@ -37,7 +39,7 @@ const Conteudos: React.FC = () => {
       const token = localStorage.getItem('token');
 
       try {
-        const response = await fetch('http://192.168.1.211:3000/api/instrutor/conteudos', {
+        const response = await fetch(`${API_URL}/instrutor/conteudos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ materia_id: materia.id}),

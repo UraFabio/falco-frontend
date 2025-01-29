@@ -6,6 +6,8 @@ import Box from '@mui/material/Box';
 import coins from '../../assets/coins.svg';
 import logo from '../../assets/logo-no-bg.png';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface Usuario {
   ano_escolar: any;
   ativo: boolean;
@@ -63,7 +65,6 @@ const Ciclo: React.FC = () => {
   const [mostrarSecao, setMostrarSecao] = useState('video');
   const [respostas, setRespostas] = useState<{ [key: number]: number | null }>({});
   const [estadoQuestoes, setEstadoQuestoes] = useState<{ [key: number]: EstadoQuestao }>({});
-  const [resultado, setResultado] = useState<string | null>(null);
   const [mostrarDicas, setMostrarDicas] = useState<MostrarDicas>({});
 
   const token = localStorage.getItem('token');
@@ -73,7 +74,7 @@ const Ciclo: React.FC = () => {
     const fetchCicloData = async () => {
       
       try {
-        const response = await fetch('http://192.168.1.211:3000/api/aluno/ciclo', {
+        const response = await fetch(`${API_URL}/aluno/ciclo`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -174,7 +175,7 @@ const Ciclo: React.FC = () => {
     if (todasCorretas) {
       setMostrarSecao('finalizado');
       try {
-        const response = await fetch('http://192.168.1.211:3000/api/aluno/falcoins', {
+        const response = await fetch(`${API_URL}/aluno/falcoins`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -190,10 +191,7 @@ const Ciclo: React.FC = () => {
         console.log(error)
       }
 
-      setResultado('Parabéns! Todas as respostas estão corretas.');
-    } else {
-      setResultado('Nem todas as respostas estão corretas. Verifique novamente.');
-    }
+    } 
   };
 
 

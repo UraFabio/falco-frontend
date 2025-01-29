@@ -5,6 +5,7 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import coins from '../assets/coins.svg';
 import logo from '../assets/logo-no-bg.png';
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface Usuario {
   ano_escolar: any;
@@ -32,7 +33,7 @@ const AdminDashboard: React.FC = () => {
       
         try {
           const [materiasRes] = await Promise.all([
-            fetch('http://192.168.1.211:3000/api/instrutor/materias', {
+            fetch(`${API_URL}/instrutor/materias`, {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -60,7 +61,6 @@ const AdminDashboard: React.FC = () => {
       fetchData()
     }, []);
   
-
 
   const handleMateriaClick = (materia: {}) => {
     navigate('/instrutor/conteudos', { state: { materia } });
@@ -128,7 +128,7 @@ const AdminDashboard: React.FC = () => {
                   className="flex flex-col items-center justify-end font-semibold text-md bg-white p-4 rounded shadow text-center cursor-pointer hover:bg-gray-100"
                   onClick={() => handleMateriaClick(materia)}
                 >
-                  <img src={"../../public/"+materia.imagem_url} alt="icone materia" />
+                  <img src={"/"+materia.imagem_url} alt="icone materia" />
                   {materia.nome}
                 </button>
                 ))}

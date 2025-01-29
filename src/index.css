@@ -6,7 +6,7 @@
 body {
   height: 100vh;
 
-  background-image: url('./sala_01.jpg'); /* Caminho relativo à pasta 'src' */
+  background-image: url('/sala_01.jpg'); /* Caminho relativo à pasta 'src' */
   background-size: cover; /* Faz a imagem cobrir toda a tela */
   background-position: center; /* Centraliza a imagem */
   background-repeat: no-repeat; /* Evita repetição da imagem */

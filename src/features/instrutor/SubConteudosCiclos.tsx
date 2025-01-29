@@ -7,6 +7,8 @@ import Box from '@mui/material/Box';
 import coins from '../../assets/coins.svg';
 import logo from '../../assets/logo-no-bg.png';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface Usuario {
   ano_escolar: any;
   ativo: boolean;
@@ -35,7 +37,7 @@ const SubConteudosCiclos: React.FC = () => {
       const token = localStorage.getItem('token');
 
       try {
-        const response = await fetch('http://192.168.1.211:3000/api/instrutor/sub-conteudos', {
+        const response = await fetch(`${API_URL}/instrutor/sub-conteudos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ conteudo_id: conteudo.id }),
@@ -96,7 +98,7 @@ const SubConteudosCiclos: React.FC = () => {
     if (!expandedSections[id] && !ciclosBySubConteudo[id]) {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://192.168.1.211:3000/api/instrutor/ciclos', {
+        const response = await fetch(`${API_URL}/instrutor/ciclos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ sub_conteudo_id: id }),

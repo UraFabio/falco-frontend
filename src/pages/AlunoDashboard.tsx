@@ -9,7 +9,7 @@ import star from '../assets/star.svg';
 import todo from '../assets/todo_green.svg'
 import subjects from '../assets/subjects_purple.svg'
 import arrow_blue from '../assets/arrow_blue_right.svg'
-import arrow_darkblue from '../assets/arrow_darkblue_right.svg'
+const API_URL = import.meta.env.VITE_API_URL;
 
 
 interface Usuario {
@@ -42,9 +42,9 @@ interface Ciclo {
 
 const AlunoDashboard: React.FC = () => {
   const [menuOption, setMenuOption] = useState('inicio');
-  const [ciclosTodo, setCiclosTodos] = useState<any[]>([]);
+  //const [ciclosTodo, setCiclosTodos] = useState<any[]>([]);
   const [materias, setMaterias] = useState<any[]>([]);
-  const [ciclosFavoritos, setCiclosFavoritos] = useState<any[]>([])
+  //const [ciclosFavoritos, setCiclosFavoritos] = useState<any[]>([])
   const [subConteudosTodo, setSubConteudosTodo] = useState<any[]>([]);
   const [subConteudosFavoritos, setSubConteudosFavoritos] = useState<any[]>([]);
   const [expandedSectionsTodo, setExpandedSectionsTodo] = useState<{ [key: number]: boolean }>({});
@@ -77,7 +77,7 @@ const AlunoDashboard: React.FC = () => {
     const fetchTodo = async () => {
 
       try {
-        const ciclosTodo = await fetch('http://192.168.1.211:3000/api/aluno/todos', {
+        const ciclosTodo = await fetch(`${API_URL}/aluno/todos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`  },
           body: JSON.stringify({ aluno_id: usuario.id }),
@@ -112,7 +112,7 @@ const AlunoDashboard: React.FC = () => {
   
         console.log(transformedData)
   
-        setCiclosTodos(ciclosTodoData);
+        //setCiclosTodos(ciclosTodoData);
       } catch (error) {
         console.error('Erro ao buscar ciclos do to-do', error);
         localStorage.clear();
@@ -150,7 +150,7 @@ const AlunoDashboard: React.FC = () => {
     try {
       switch(menuOption){
         case 'inicio':
-          const ciclosTodo = await fetch('http://192.168.1.211:3000/api/aluno/todos', {
+          const ciclosTodo = await fetch(`${API_URL}/aluno/todos`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`  },
             body: JSON.stringify({ aluno_id: usuario.id }),
@@ -185,11 +185,11 @@ const AlunoDashboard: React.FC = () => {
     
           console.log(transformedData)
     
-          setCiclosTodos(ciclosTodoData);
+          //setCiclosTodos(ciclosTodoData);
   
           break
         case 'materias':
-          const materias = await fetch('http://192.168.1.211:3000/api/aluno/materias', {
+          const materias = await fetch(`${API_URL}/aluno/materias`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ aluno_id: usuario.id }),
@@ -207,7 +207,7 @@ const AlunoDashboard: React.FC = () => {
   
           break
         case 'favoritos':
-          const favoritos = await fetch('http://192.168.1.211:3000/api/aluno/favoritos', {
+          const favoritos = await fetch(`${API_URL}/aluno/favoritos`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ aluno_id: usuario.id }),
@@ -240,7 +240,7 @@ const AlunoDashboard: React.FC = () => {
 
           setSubConteudosFavoritos(transformedFavoritosData)
 
-          setCiclosFavoritos(favoritosData)
+          //setCiclosFavoritos(favoritosData)
 
           console.log(transformedFavoritosData)
   
@@ -357,7 +357,7 @@ const AlunoDashboard: React.FC = () => {
       
                   {expandedSectionsTodo[subConteudo.sub_conteudo_id] && (
                     <ul className="ml-4 mt-2">
-                    {subConteudo.ciclos.map((ciclo: any, index: number) => (
+                    {subConteudo.ciclos.map((ciclo: any) => (
                       <li key={ciclo.id} className="flex justify-between bg-azulFalcao p-2 rounded mb-2 shadow">
                         <div
                           className='cursor-pointer font-semibold'
@@ -384,7 +384,7 @@ const AlunoDashboard: React.FC = () => {
                   className="flex flex-col items-center justify-end bg-azulBotao text-white p-4 rounded shadow text-center cursor-pointer hover:bg-azulHeaderAdmin hover:scale-105 transition-transform sombra-botao"
                   onClick={() => handleMateriaClick(materia)}
                 >
-                  <img src={"../../public/"+materia.imagem_url} alt="" />
+                  <img src={"/"+materia.imagem_url} alt="" />
                   <span className='font-semibold text-md'>{materia.nome}</span>
                 </button>
                 ))}
@@ -417,7 +417,7 @@ const AlunoDashboard: React.FC = () => {
       
                   {expandedSectionsFavoritos[subConteudo.sub_conteudo_id] && (
                     <ul className="ml-4 mt-2">
-                    {subConteudo.ciclos.map((ciclo: any, index: number) => (
+                    {subConteudo.ciclos.map((ciclo: any) => (
                       <li key={ciclo.id} className="flex justify-between bg-azulFalcao p-2 rounded mb-2 shadow">
                         <div
                           className='cursor-pointer font-semibold'

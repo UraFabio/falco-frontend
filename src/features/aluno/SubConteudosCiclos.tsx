@@ -11,6 +11,8 @@ import todo_green from '../../assets/todo_green.svg'
 import star_white from '../../assets/star_white.svg'
 import star_yellow from '../../assets/star.svg'
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface Usuario {
   ano_escolar: any;
   ativo: boolean;
@@ -70,7 +72,7 @@ const SubConteudosCiclos: React.FC = () => {
       const token = localStorage.getItem('token');
 
       try {
-        const response = await fetch('http://192.168.1.211:3000/api/aluno/ciclos', {
+        const response = await fetch(`${API_URL}/aluno/ciclos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ usuario_id: usuario.id, conteudo_id: conteudo.id }),
@@ -168,7 +170,7 @@ const SubConteudosCiclos: React.FC = () => {
 
     try {
       if (todo) {
-        const response = await fetch('http://192.168.1.211:3000/api/aluno/todo', {
+        const response = await fetch(`${API_URL}/aluno/todo`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ usuario_id: usuario.id, cicloId }),
@@ -178,7 +180,7 @@ const SubConteudosCiclos: React.FC = () => {
           throw new Error('Erro de autenticação');
         }
       }else {
-        const response = await fetch('http://192.168.1.211:3000/api/aluno/todo', {
+        const response = await fetch(`${API_URL}/aluno/todo`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ usuario_id: usuario.id, cicloId }),
@@ -194,7 +196,7 @@ const SubConteudosCiclos: React.FC = () => {
         // Verifica se o sub_conteudo_id é igual a 2
         if (subConteudo.sub_conteudo_id === sub_conteudo_id) {
             // Cria uma cópia do array ciclos com a modificação
-            const novosCiclos = subConteudo.ciclos.map(ciclo => {
+            const novosCiclos = subConteudo.ciclos.map((ciclo: any) => {
                 if (ciclo.id === cicloId) {
                     return { ...ciclo, todo: todo }; // Modifica o todo para true
                 }
@@ -221,7 +223,7 @@ const SubConteudosCiclos: React.FC = () => {
 
     try {
       if (favoritos) {
-        const response = await fetch('http://192.168.1.211:3000/api/aluno/favorito', {
+        const response = await fetch(`${API_URL}/aluno/favorito`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ usuario_id: usuario.id, cicloId }),
@@ -231,7 +233,7 @@ const SubConteudosCiclos: React.FC = () => {
           throw new Error('Erro de autenticação');
         }
       }else {
-        const response = await fetch('http://192.168.1.211:3000/api/aluno/favorito', {
+        const response = await fetch(`${API_URL}/aluno/favorito`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ usuario_id: usuario.id, cicloId }),
@@ -246,7 +248,7 @@ const SubConteudosCiclos: React.FC = () => {
         // Verifica se o sub_conteudo_id é igual a 2
         if (subConteudo.sub_conteudo_id === sub_conteudo_id) {
             // Cria uma cópia do array ciclos com a modificação
-            const novosCiclos = subConteudo.ciclos.map(ciclo => {
+            const novosCiclos = subConteudo.ciclos.map((ciclo: any) => {
                 if (ciclo.id === cicloId) {
                     return { ...ciclo, favoritos: favoritos }; // Modifica o todo para true
                 }

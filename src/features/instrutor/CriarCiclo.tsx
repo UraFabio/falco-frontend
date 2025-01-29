@@ -5,6 +5,7 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import coins from '../../assets/coins.svg';
 import logo from '../../assets/logo-no-bg.png';
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface Usuario {
   ano_escolar: any;
@@ -65,7 +66,7 @@ const CriarCiclo: React.FC = () => {
         throw new Error('Preencha os campos corretamente.')
       }
 
-      const response = await fetch(`http://192.168.1.211:3000/api/instrutor/ciclo/`, {
+      const response = await fetch(`${API_URL}/instrutor/ciclo/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ sub_conteudo_id: subConteudo.id, ciclo_id:cicloId, video_url: videoUrl, descricao, nome: nomeCiclo, objetivo: objetivoCiclo, requisitos: requisitosCiclo, falcoins: cicloFalcoins, habilidadesabnt: habilidadesABNT }),
@@ -158,7 +159,7 @@ const CriarCiclo: React.FC = () => {
   
   
     try {
-      const response = await fetch(`http://192.168.1.211:3000/api/instrutor/questao`, {
+      const response = await fetch(`${API_URL}/instrutor/questao`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ciclo_id:cicloId, questao }),

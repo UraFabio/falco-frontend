@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import do hook useNavigate
 import logo from '../assets/logo-no-bg.png';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Login: React.FC = () => {
   const [login, setLogin] = useState('');
@@ -9,12 +10,14 @@ const Login: React.FC = () => {
   
   const navigate = useNavigate(); // Inicializa o hook para redirecionamento
 
+console.log('teste',API_URL)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     try {
-      const response = await fetch('http://192.168.1.211:3000/api/auth/login', {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ login, senha }),

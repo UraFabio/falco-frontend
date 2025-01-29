@@ -8,6 +8,7 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface Usuario {
   ano_escolar: any;
@@ -33,7 +34,7 @@ const SubConteudos: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   
   
-  const handleCloseSnackBar = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  const handleCloseSnackBar = (reason?: string) => {
     if (reason === "clickaway") {
       return;
     }
@@ -50,7 +51,7 @@ const SubConteudos: React.FC = () => {
       const token = localStorage.getItem('token');
 
       try {
-        const response = await fetch('http://192.168.1.211:3000/api/admin/subConteudos', {
+        const response = await fetch(`${API_URL}/admin/subConteudos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ conteudo_id: conteudo.id}),
@@ -86,7 +87,7 @@ const SubConteudos: React.FC = () => {
 
       const token = localStorage.getItem('token');
 
-      const response = await fetch('http://192.168.1.211:3000/api/admin/subConteudo', {
+      const response = await fetch(`${API_URL}/admin/subConteudo`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ conteudo_id: conteudo.id, nome: novoSubConteudo }),
@@ -148,10 +149,10 @@ const SubConteudos: React.FC = () => {
       <Snackbar
         open={openSnackBar}
         autoHideDuration={3000}
-        onClose={handleCloseSnackBar}
+        onClose={() => handleCloseSnackBar}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert onClose={handleCloseSnackBar} severity="success" sx={{ width: "100%" }}>
+        <Alert onClose={() => handleCloseSnackBar} severity="success" sx={{ width: "100%" }}>
           Sub-conteúdo criado com sucesso!
         </Alert>
       </Snackbar>
