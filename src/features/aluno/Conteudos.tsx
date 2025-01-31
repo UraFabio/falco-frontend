@@ -30,6 +30,7 @@ const Conteudos: React.FC = () => {
 
   const navigate = useNavigate();
 
+
   // Fetch data
   useEffect(() => {
     //if (!materiaId) return;
@@ -91,7 +92,7 @@ const Conteudos: React.FC = () => {
           <h1 className="text-2xl font-bold">Olá, {nomeUsuario}!</h1>
         </div>
         <div className="flex items-center space-x-4">
-          {usuario.perfil_id === 1 && false && (
+          {usuario.perfil_id === 1 && (
             <>
               <img src={coins} alt="fal-coins" />
               <span>Fal-coins: {falcoins}</span>
@@ -118,19 +119,21 @@ const Conteudos: React.FC = () => {
         </Box>
       </Modal>
 
-      <div className="p-6 h-[calc(100vh-10rem)] min-w-full bg-azulBgAdmin bg-opacity-80 overflow-auto">
-        <button onClick={() => navigate('/aluno')} className='text-white bg-azulFalcaoSecundario px-2 rounded-md mb-2'>◁ Tela de início</button>
-        <h2 className="text-white text-2xl font-bold mb-4">Conteúdos de {materia.nome}</h2>
-        <div className="grid grid-cols-4 gap-4">
-          {conteudos.map((conteudo) => (
-            <button
-            key={conteudo.id}
-            className="bg-white p-4 rounded shadow text-center cursor-pointer hover:bg-gray-100"
-            onClick={() => handleConteudoClick(conteudo)}
-          >
-            {conteudo.nome}
-          </button>
-          ))}
+      <div className="flex flex-col p-6 h-[calc(100vh-10rem)] min-w-full bg-azulBgAluno bg-opacity-60 rounded-b-lg shadow-inner shadow-slate-800">
+        <button onClick={() => navigate('/aluno')} className='text-white bg-azulFalcaoSecundario px-2 rounded-md mb-2 border w-fit text-nowrap border-black border-1'>◁ Tela de início</button>
+        <div className='m-4 rounded-lg overflow-auto bg-black bg-opacity-20'>
+          <span className="flex items-center sombra-botao w-fit text-white text-2xl font-bold bg-azulHeaderAdmin px-4 py-2 rounded-br-md">Conteúdos de {materia.nome} <img src={"/" + materia.imagem_url} alt='' className='w-10 object-contain ml-4'></img></span>
+          <div className="grid grid-cols-4 m-4 mt-8 gap-4">
+            {conteudos.map((conteudo) => (
+              <button
+              key={conteudo.id}
+              className="flex flex-col items-center justify-end bg-azulBotao text-white p-4 rounded shadow text-center cursor-pointer hover:bg-azulHeaderAdmin hover:scale-105 transition-transform sombra-botao"
+              onClick={() => handleConteudoClick(conteudo)}
+              >
+              {conteudo.nome}
+            </button>
+            ))}
+          </div>
         </div>
 
      

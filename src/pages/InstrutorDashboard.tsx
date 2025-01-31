@@ -5,6 +5,7 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import coins from '../assets/coins.svg';
 import logo from '../assets/logo-no-bg.png';
+import subjects from '../assets/subjects_purple.svg';
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface Usuario {
@@ -117,21 +118,22 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="w-3/4 p-6 overflow-auto">
+        <div className="w-3/4 overflow-auto">
           {menuOption === 'ciclos' && (
             <div>
-              <h2 className="text-white text-2xl font-bold mb-4">Matérias</h2>
-              <div className="grid grid-cols-4 gap-4">
+              <span className="flex items-center sombra-botao w-fit text-white text-2xl font-bold bg-azulHeaderAdmin px-4 py-2 rounded-br-md">Matérias <img src={subjects} alt='Subjects Icon' className='h-6 w-6 object-contain ml-2'></img></span>
+              <div className="grid grid-cols-4 m-4 mt-8 gap-4">
                 {materias.map((materia: any) => (
                   <button
                   key={materia.id}
-                  className="flex flex-col items-center justify-end font-semibold text-md bg-white p-4 rounded shadow text-center cursor-pointer hover:bg-gray-100"
+                  className="flex flex-col items-center justify-end bg-azulBotao text-white p-4 rounded shadow text-center cursor-pointer hover:bg-azulHeaderAdmin hover:scale-105 transition-transform sombra-botao"
                   onClick={() => handleMateriaClick(materia)}
                 >
-                  <img src={"/"+materia.imagem_url} alt="icone materia" />
-                  {materia.nome}
+                  <img src={"/"+materia.imagem_url} alt="" />
+                  <span className='font-semibold text-md'>{materia.nome}</span>
                 </button>
                 ))}
+              
               </div>
             </div>
           )}

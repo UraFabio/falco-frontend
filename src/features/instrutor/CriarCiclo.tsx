@@ -36,7 +36,7 @@ interface EstadoQuestao {
 
 const CriarCiclo: React.FC = () => {
   const location = useLocation();
-  const { materia, conteudo, subConteudo } = location.state || {}; // Recebe o ID do sub-conteúdo
+  const { materia, conteudo, subConteudo, ciclo } = location.state || {}; // Recebe o ID do sub-conteúdo
   const [modalLogoutOpen, setModalLogoutOpen] = useState(false);
   const [cicloId, setCicloId] = useState<number>();
   const [videoUrl, setVideoUrl] = useState('');
@@ -51,12 +51,26 @@ const CriarCiclo: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [questoes, setQuestoes] = useState<Questao[]>([]);
   const [estadosQuestoes, setEstadosQuestoes] = useState<EstadoQuestao[]>([])
+  const [successMessage, setSuccessMessage] = useState('')
   
   const navigate = useNavigate();
 
  useEffect(() => {
-    /* Implementar logica para autenticar token*/
-  }, );
+    
+    if (ciclo) {
+      setVideoUrl(ciclo.video_url)
+      setDescricao(ciclo.descricao)
+      setNomeCiclo(ciclo.nome)
+      setObjetivoCiclo(ciclo.objetivo)
+      setRequisitosCiclo(ciclo.requisitos)
+      setCicloFalcoins(ciclo.falcoins)
+      setHabilidadesABNT(ciclo.habilidadesabnt)
+      
+
+      setCicloId(ciclo.id)
+
+    }  
+  },[ciclo] );
 
   const handleSalvarCiclo = async () => {
     const token = localStorage.getItem('token');
@@ -66,25 +80,44 @@ const CriarCiclo: React.FC = () => {
         throw new Error('Preencha os campos corretamente.')
       }
 
-      const response = await fetch(`${API_URL}/instrutor/ciclo/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ sub_conteudo_id: subConteudo.id, ciclo_id:cicloId, video_url: videoUrl, descricao, nome: nomeCiclo, objetivo: objetivoCiclo, requisitos: requisitosCiclo, falcoins: cicloFalcoins, habilidadesabnt: habilidadesABNT }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao criar ciclo');
+      if (!ciclo) {
+        const response = await fetch(`${API_URL}/instrutor/ciclo/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ sub_conteudo_id: subConteudo.id, ciclo_id:cicloId, video_url: videoUrl, descricao, nome: nomeCiclo, objetivo: objetivoCiclo, requisitos: requisitosCiclo, falcoins: cicloFalcoins, habilidadesabnt: habilidadesABNT }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Erro ao criar ciclo');
+        }
+  
+        const data = await response.json();
+  
+        setCicloCriado(true); // Marca que o ciclo foi criado
+        setSuccessMessage('Ciclo criado com sucesso!')
+        setCicloId(data.cicloId); // Salva o ID do ciclo retornado
+        setErrorMessage('')
+  
+        console.log('id do ciclo: ', data.cicloId)
+  
+        console.log('Ciclo criado com sucesso!');
+      } else {
+        const response = await fetch(`${API_URL}/instrutor/ciclo/`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ ciclo_id:cicloId, video_url: videoUrl, descricao, nome: nomeCiclo, objetivo: objetivoCiclo, requisitos: requisitosCiclo, falcoins: cicloFalcoins, habilidadesabnt: habilidadesABNT }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Erro ao atualizar ciclo');
+        }
+        setCicloCriado(true); // Marca que o ciclo foi criado
+        setSuccessMessage('Ciclo criado com sucesso!')
+        setSuccessMessage('Ciclo atualizado com sucesso');
+        setErrorMessage('')
+        console.log('Ciclo atualizado com sucesso')
       }
-
-      const data = await response.json();
-
-      setCicloCriado(true); // Marca que o ciclo foi criado
-      setCicloId(data.cicloId); // Salva o ID do ciclo retornado
-      setErrorMessage('')
-
-      console.log('id do ciclo: ', data.cicloId)
-
-      console.log('Ciclo criado com sucesso!');
+      
     } catch (error:any) {
       setErrorMessage(error.message)
       console.error('Erro ao criar ciclo:', error);
@@ -224,7 +257,7 @@ const CriarCiclo: React.FC = () => {
           >
           ← voltar
         </button>
-        <h2 className="text-xl font-bold mb-4">Criar Ciclo</h2>
+        <h2 className="text-xl font-bold mb-4">{ciclo ? "Editar Ciclo" : "Criar Ciclo"}</h2>
 
         {/* Campo para Nome do Ciclo */}
         <div className="mb-6">
@@ -313,9 +346,9 @@ const CriarCiclo: React.FC = () => {
 
         {/* Botão para Salvar */}
         <div className="flex items-center justify-end">
-          { cicloCriado && 
-            <span className='text-green-500 font-semibold text-xl mr-80'>Ciclo criado com Sucesso!</span>
-          }
+          
+          <span className='text-green-500 text-nowrap font-semibold text-xl mr-4'>{successMessage}</span>
+          
           { !cicloCriado &&
             <span className='text-red-500 text-xl font-semibold mr-80'>{errorMessage}</span>
           }

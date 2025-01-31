@@ -59,7 +59,7 @@ const Ciclo: React.FC = () => {
   const navigate = useNavigate();
 
   const [modalLogoutOpen, setModalLogoutOpen] = useState(false);
-  const { materia, conteudo, subConteudo, ciclo } = location.state || {};
+  const { ciclo } = location.state || {};
   const [videoUrl, setVideoUrl] = useState('');
   const [questoes, setQuestoes] = useState<Questao[]>([]);
   const [mostrarSecao, setMostrarSecao] = useState('video');
@@ -174,7 +174,6 @@ const Ciclo: React.FC = () => {
     setEstadoQuestoes(estadoAtualizado);
 
     if (todasCorretas) {
-      console.log(materia)
       setMostrarSecao('finalizado');
       try {
         const response = await fetch(`${API_URL}/aluno/falcoins`, {
@@ -236,7 +235,7 @@ const Ciclo: React.FC = () => {
         <h1 className="text-2xl font-bold">Olá, {nomeUsuario}!</h1>
         </div>
         <div className="flex items-center space-x-4">
-        {usuario.perfil_id === 1 && false && (
+        {usuario.perfil_id === 1 && (
           <>
             <img src={coins} alt="fal-coins" />
             <span>Fal-coins: {falcoins}</span>

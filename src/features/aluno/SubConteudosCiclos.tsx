@@ -282,66 +282,68 @@ const SubConteudosCiclos: React.FC = () => {
           <h1 className="text-2xl font-bold">Olá, {nomeUsuario}!</h1>
         </div>
         <div className="flex items-center space-x-4">
-          {usuario.perfil_id === 1 && false && (
+          {usuario.perfil_id === 1 && (
             <>
               <img src={coins} alt="fal-coins" />
               <span>Fal-coins: {falcoins}</span>
             </>
           )}
-          <button className="text-white border border-white px-3 py-1 rounded" onClick={() => setModalLogoutOpen(true)}>
+          <Button variant="outlined" color="inherit" onClick={() => setModalLogoutOpen(true)}>
             Logout
-          </button>
+          </Button>
         </div>
       </header>
 
-      <div className="p-6 h-[calc(100vh-10rem)] min-w-full bg-azulBgAdmin bg-opacity-80 overflow-auto">
+      <div className="flex flex-col p-6 h-[calc(100vh-10rem)] min-w-full bg-azulBgAluno bg-opacity-60 rounded-b-lg shadow-inner shadow-slate-800">
         <button
           onClick={() => navigate('/aluno/conteudos', { state: { materia } })}
-          className="text-white bg-azulFalcaoSecundario px-2 rounded-md mb-2"
+          className="text-white w-fit text-nowrap bg-azulFalcaoSecundario px-2 rounded-md mb-2 border border-black"
         >
-          ← voltar
+          ◁ Conteúdos
         </button>
 
-        <h2 className="text-white text-2xl font-bold mb-4">Sub-conteúdos de {conteudo.nome}</h2>
+        <div className='m-4 pb-4 rounded-lg overflow-auto bg-black bg-opacity-20 '>
+          <span className="flex items-center sombra-botao w-fit text-white text-2xl font-bold bg-azulHeaderAdmin px-4 py-2 rounded-br-md">Sub-conteúdos de {conteudo.nome} <img src={"/" + materia.imagem_url} alt='' className='w-10 object-contain ml-4'></img></span>
+          {subConteudos.map((subConteudo) => (
+            <div key={subConteudo.sub_conteudo_id} className="px-4 mt-4 w-full">
+              <div
+                className="flex flex-row bg-slate-300 p-4 rounded shadow mb-1 cursor-pointer min-w-2/4"
+                onClick={() => toggleSection(subConteudo.sub_conteudo_id)}
+              >
+                <h3 className="text-xl font-bold flex items-center">
+                        <img
+                          src={arrow_blue}
+                          alt='seta azul'
+                          className={`h-5 inline-block transform transition-transform duration-300 ${
+                            expandedSections[subConteudo.sub_conteudo_id] ? 'rotate-90' : 'rotate-0'
+                          }`}
+                        />
+                        <span className="ml-2">{subConteudo.sub_conteudo_nome}</span>
+                      </h3>
+              </div>
 
-        {subConteudos.map((subConteudo) => (
-          <div key={subConteudo.sub_conteudo_id} className="px-4 mt-4 w-full">
-            <div
-              className="flex flex-row bg-slate-300 p-4 rounded shadow mb-1 cursor-pointer w-2/4"
-              onClick={() => toggleSection(subConteudo.sub_conteudo_id)}
-            >
-              <h3 className="text-xl font-bold flex items-center">
-                      <img
-                        src={arrow_blue}
-                        alt='seta azul'
-                        className={`h-5 inline-block transform transition-transform duration-300 ${
-                          expandedSections[subConteudo.sub_conteudo_id] ? 'rotate-90' : 'rotate-0'
-                        }`}
-                      />
-                      <span className="ml-2">{subConteudo.sub_conteudo_nome}</span>
-                    </h3>
+              {expandedSections[subConteudo.sub_conteudo_id] && (
+                <ul className="ml-4 mt-2">
+                {subConteudo.ciclos.map((ciclo: any, index: number) => (
+                  <li key={ciclo.id} className="flex justify-between bg-azulFalcao p-2 rounded mb-2 shadow">
+                    <div
+                      className='cursor-pointer'
+                      onClick={() => handleOpenModal(subConteudo, ciclo)}
+                    >
+                      {`Ciclo ${index + 1} - ${ciclo.nome}`}
+                    </div>
+                    <div className='flex gap-4'>
+                      <img onClick={() => handleTodoBotao(ciclo.id, subConteudo.sub_conteudo_id, ciclo.todo ? false : true )} src={ciclo.todo ? todo_green : todo_white} alt="todo icon white" className='w-6 cursor-pointer'/>
+                      <img onClick={() => handleFavoritoBotao(ciclo.id, subConteudo.sub_conteudo_id, ciclo.favoritos ? false : true )} src={ciclo.favoritos ? star_yellow : star_white} alt="star icon white" className='w-6 cursor-pointer'/>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              )}
             </div>
-
-            {expandedSections[subConteudo.sub_conteudo_id] && (
-              <ul className="ml-4 mt-2">
-              {subConteudo.ciclos.map((ciclo: any, index: number) => (
-                <li key={ciclo.id} className="flex justify-between bg-azulFalcao p-2 rounded mb-2 shadow">
-                  <div
-                    className='cursor-pointer'
-                    onClick={() => handleOpenModal(subConteudo, ciclo)}
-                  >
-                    {`Ciclo ${index + 1} - ${ciclo.nome}`}
-                  </div>
-                  <div className='flex gap-4'>
-                    <img onClick={() => handleTodoBotao(ciclo.id, subConteudo.sub_conteudo_id, ciclo.todo ? false : true )} src={ciclo.todo ? todo_green : todo_white} alt="todo icon white" className='w-6 cursor-pointer'/>
-                    <img onClick={() => handleFavoritoBotao(ciclo.id, subConteudo.sub_conteudo_id, ciclo.favoritos ? false : true )} src={ciclo.favoritos ? star_yellow : star_white} alt="star icon white" className='w-6 cursor-pointer'/>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
+        
 
         
         {/* Modal para mostrar detalhes do ciclo */}

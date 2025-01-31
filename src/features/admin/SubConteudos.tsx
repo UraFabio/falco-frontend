@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { Snackbar, Alert } from '@mui/material';
 import coins from '../../assets/coins.svg';
 import logo from '../../assets/logo-no-bg.png';
+import arrow_blue from '../../assets/arrow_blue_right.svg';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -23,33 +24,29 @@ interface Usuario {
 }
 
 const SubConteudos: React.FC = () => {
-
   const location = useLocation();
+  const navigate = useNavigate();
+
   const { materia, conteudo } = location.state || {}; // Recebe o ID da matéria
-  const [sub_conteudos, setSubConteudos] = useState<any[]>([]);
+  const [subConteudos, setSubConteudos] = useState<any[]>([]);
   const [novoSubConteudo, setNovoSubConteudo] = useState('');
+  const [expandedSections, setExpandedSections] = useState<{ [key: number]: boolean }>({});
+  const [ciclosBySubConteudo, setCiclosBySubConteudo] = useState<{ [key: number]: any[] }>({});
   const [modalSubConteudoOpen, setModalSubConteudoOpen] = useState(false);
   const [modalLogoutOpen, setModalLogoutOpen] = useState(false);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   
   
-  const handleCloseSnackBar = (_?: React.SyntheticEvent | Event,reason?: string) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackBar(false);
-  };
-
-  const navigate = useNavigate();
-
+  
+  
   // Fetch data
   useEffect(() => {
     if (!conteudo) return;
-
+    
     const fetchSubConteudos = async () => {
       const token = localStorage.getItem('token');
-
+      
       try {
         const response = await fetch(`${API_URL}/admin/subConteudos`, {
           method: 'POST',
@@ -59,24 +56,65 @@ const SubConteudos: React.FC = () => {
         if(!response.ok) {
           throw new Error('Erro de autenticação');
         }
-
+        
         const data = await response.json();
+
         setSubConteudos(data);
+        console.log(data)
+
       } catch (error) {
         console.error('Erro ao buscar sub-conteúdos:', error);
         localStorage.clear()
         navigate('/login');
       }
     };
-
+    
     fetchSubConteudos();
   }, [conteudo]);
-
+  
   useEffect(() => {
     setErrorMessage('');
   }, [modalSubConteudoOpen])
+  
+  // Toggle dropdown
+  const toggleSection = async (id: number) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
 
-  console.log('subconteudos: ', sub_conteudos)
+    // If the section is being expanded and ciclos are not already loaded
+    if (!expandedSections[id] && !ciclosBySubConteudo[id]) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/admin/ciclos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ sub_conteudo_id: id }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar ciclos');
+        }
+
+        const data = await response.json();
+        setCiclosBySubConteudo((prev) => ({
+          ...prev,
+          [id]: data, // Add the ciclos for the expanded sub_conteúdo
+        }));
+      } catch (error) {
+        console.error(`Erro ao buscar ciclos para sub-conteúdo ${id}:`, error);
+      }
+    }
+  };
+
+  const handleCloseSnackBar = (_?: React.SyntheticEvent | Event,reason?: string) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackBar(false);
+  };
+
 
   const handleCreateSubConteudo = async () => {
     try {
@@ -100,7 +138,7 @@ const SubConteudos: React.FC = () => {
       const novoSubConteudoCriado = await response.json();
 
       console.log(novoSubConteudoCriado)
-      setSubConteudos([...sub_conteudos, novoSubConteudoCriado.subConteudo]);
+      setSubConteudos([...subConteudos, novoSubConteudoCriado.subConteudo]);
       setNovoSubConteudo('');
       setModalSubConteudoOpen(false);
       setOpenSnackBar(true)
@@ -173,24 +211,46 @@ const SubConteudos: React.FC = () => {
       </Modal>
 
       <div className="p-6 h-[calc(100vh-10rem)] min-w-full bg-azulBgAdmin bg-opacity-80">
-        <button onClick={() => navigate('/admin/conteudos', { state: { materia } })} className='text-white bg-azulFalcaoSecundario px-2 rounded-md mb-2'>← voltar</button>
+        <button
+          onClick={() => navigate('/admin/conteudos', { state: { materia } })}
+          className="text-white bg-azulFalcaoSecundario px-2 rounded-md mb-2"
+        >
+          ← voltar
+        </button>
+        
         <h2 className="text-white text-2xl font-bold mb-4">Sub-conteúdos de { conteudo.nome }</h2>
-        <div className="grid grid-cols-4 gap-4">
-          {sub_conteudos.map((sub_conteudo) => (
+        
+        {subConteudos.map((subConteudo) => (
+          <div key={subConteudo.id} className="px-4 mt-4 w-full">
             <div
-            key={sub_conteudo.id}
-            className="bg-white p-4 rounded shadow text-center "
-          >
-            {sub_conteudo.nome}
+              className="flex flex-row bg-slate-300 p-4 rounded shadow mb-1 cursor-pointer w-2/4"
+              onClick={() => toggleSection(subConteudo.id)}
+            >
+              <h3 className="text-xl font-bold flex items-center">
+                <img
+                  src={arrow_blue}
+                  alt='seta azul'
+                  className={`h-5 inline-block transform transition-transform duration-300 ${
+                    expandedSections[subConteudo.id] ? 'rotate-90' : 'rotate-0'
+                  }`}
+                />
+                <span className="ml-2">{subConteudo.nome}</span>
+              </h3>
+            </div>
+
+            {expandedSections[subConteudo.id] && (
+              <ul className="ml-4 mt-2">
+                {(ciclosBySubConteudo[subConteudo.id] || []).map((ciclo: any, index: number) => (
+                  <li key={ciclo.id} className="flex flex-row justify-between bg-gray-100 p-2 rounded mb-2 shadow">
+                    <div>
+                      {`Ciclo ${index + 1} - ${ciclo.nome}`}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-          ))}
-          <div
-            className="bg-blue-500 text-white p-4 rounded shadow flex items-center justify-center cursor-pointer"
-            onClick={() => setModalSubConteudoOpen(true)}
-          >
-            <span className="text-2xl font-bold">+</span>
-          </div>
-        </div>
+        ))}
 
         {/* Create Sub-Conteúdo Modal */}
         <Modal open={modalSubConteudoOpen} onClose={() => setModalSubConteudoOpen(false)} className='flex items-center justify-center'>

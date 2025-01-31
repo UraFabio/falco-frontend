@@ -184,6 +184,12 @@ const Conteudos: React.FC = () => {
       <button onClick={() => navigate('/admin')} className='text-white bg-azulFalcaoSecundario px-2 rounded-md mb-2'>← voltar</button>
       <h2 className="text-white text-2xl font-bold mb-4">Conteúdos de {materia.nome}</h2>
       <div className="grid grid-cols-4 gap-4">
+        <div
+          className="bg-blue-500 text-white p-4 rounded shadow flex items-center justify-center cursor-pointer"
+          onClick={() => setModalConteudoOpen(true)}
+        >
+          <span className="text-2xl font-bold">+</span>
+        </div>
         {conteudos.map((conteudo) => (
           <button
           key={conteudo.id}
@@ -193,12 +199,7 @@ const Conteudos: React.FC = () => {
           {conteudo.nome}
         </button>
         ))}
-        <div
-          className="bg-blue-500 text-white p-4 rounded shadow flex items-center justify-center cursor-pointer"
-          onClick={() => setModalConteudoOpen(true)}
-        >
-          <span className="text-2xl font-bold">+</span>
-        </div>
+        
       </div>
 
       {/* Create Conteúdo Modal */}

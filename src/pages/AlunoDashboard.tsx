@@ -293,7 +293,7 @@ const AlunoDashboard: React.FC = () => {
           <h1 className="text-2xl font-bold">Olá, {nomeUsuario}!</h1>
         </div>
         <div className="flex items-center space-x-4">
-          {usuario.perfil_id === 1 && false && (
+          {usuario.perfil_id === 1 && (
             <>
               <img src={coins} alt="fal-coins" />
               <span>Fal-coins: {falcoins}</span>
@@ -305,7 +305,7 @@ const AlunoDashboard: React.FC = () => {
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-10rem)] min-w-full bg-azulBgAluno bg-opacity-60 rounded-b-lg shadow-inner shadow-md shadow-slate-800">
+      <div className="flex h-[calc(100vh-10rem)] min-w-full bg-azulBgAluno bg-opacity-60 rounded-b-lg shadow-inner shadow-slate-800">
         {/* Sidebar */}
         <div className="text-lg w-1/4 bg-azulAluno flex flex-col items-center p-4">
           <button
@@ -375,9 +375,9 @@ const AlunoDashboard: React.FC = () => {
           )}
 
           {menuOption === 'materias' && (
-            <div>
+            <>
               <span className="flex items-center sombra-botao w-fit text-white text-2xl font-bold bg-azulHeaderAdmin px-4 py-2 rounded-br-md">Matérias <img src={subjects} alt='Subjects Icon' className='h-6 w-6 object-contain ml-2'></img></span>
-              <div className="grid grid-cols-4 m-4 mt-8 gap-4">
+              <div className="grid grid-cols-4 m-4 mt-8 gap-4 ">
                 {materias.map((materia: any) => (
                   <button
                   key={materia.id}
@@ -390,7 +390,7 @@ const AlunoDashboard: React.FC = () => {
                 ))}
                 
               </div>
-            </div>
+            </>
           )}
 
           {menuOption === 'favoritos' && (

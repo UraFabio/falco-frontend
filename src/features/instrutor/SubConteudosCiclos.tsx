@@ -6,6 +6,8 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import coins from '../../assets/coins.svg';
 import logo from '../../assets/logo-no-bg.png';
+import arrow_blue from '../../assets/arrow_blue_right.svg';
+import edit from '../../assets/edit.svg';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -51,28 +53,6 @@ const SubConteudosCiclos: React.FC = () => {
 
         setSubConteudos(data);
         console.log(data)
-
-        // const subConteudosMap = new Map();
-
-        // data.forEach((item: any) => {
-        //   const { sub_conteudo_id, sub_conteudo_nome, ...ciclo } = item;
-    
-        //   if (!subConteudosMap.has(sub_conteudo_id)) {
-        //     subConteudosMap.set(sub_conteudo_id, {
-        //       sub_conteudo_id,
-        //       sub_conteudo_nome,
-        //       ciclos: [],
-        //     });
-        //   }
-    
-        //   subConteudosMap.get(sub_conteudo_id).ciclos.push(ciclo);
-        // });
-    
-        // const transformedData = Array.from(subConteudosMap.values());
-    
-        // setSubConteudos(transformedData);
-
-        // console.log(transformedData)
 
       } catch (error) {
         console.error('Erro ao buscar sub-conteúdos:', error);
@@ -167,12 +147,21 @@ const SubConteudosCiclos: React.FC = () => {
         <h2 className="text-white text-2xl font-bold mb-4">Sub-conteúdos de {conteudo.nome}</h2>
 
         {subConteudos.map((subConteudo) => (
-          <div key={subConteudo.id} className="mb-4">
+          <div key={subConteudo.id} className="px-4 mt-4 w-full">
             <div
-              className="flex flex-row bg-white p-4 rounded shadow cursor-pointer"
+              className="flex flex-row bg-slate-300 p-4 rounded shadow mb-1 cursor-pointer w-2/4"
               onClick={() => toggleSection(subConteudo.id)}
             >
-              <h3 className="text-xl font-bold">{subConteudo.nome}</h3>
+              <h3 className="text-xl font-bold flex items-center">
+                <img
+                  src={arrow_blue}
+                  alt='seta azul'
+                  className={`h-5 inline-block transform transition-transform duration-300 ${
+                    expandedSections[subConteudo.id] ? 'rotate-90' : 'rotate-0'
+                  }`}
+                />
+                <span className="ml-2">{subConteudo.nome}</span>
+              </h3>
               
               <button
                 className="bg-azulFalcao ml-2 p-2 rounded shadow text-center cursor-pointer hover:bg-gray-100"
@@ -185,8 +174,11 @@ const SubConteudosCiclos: React.FC = () => {
             {expandedSections[subConteudo.id] && (
               <ul className="ml-4 mt-2">
                 {(ciclosBySubConteudo[subConteudo.id] || []).map((ciclo: any, index: number) => (
-                  <li key={ciclo.id} className="bg-gray-100 p-2 rounded mb-2 shadow">
-                    {`Ciclo ${index + 1} - ${ciclo.nome}`}
+                  <li key={ciclo.id} className="flex flex-row justify-between bg-gray-100 p-2 rounded mb-2 shadow">
+                    <div>
+                      {`Ciclo ${index + 1} - ${ciclo.nome}`}
+                    </div>
+                    <img onClick={() => navigate('/instrutor/ciclos/novo', { state: {materia, conteudo, ciclo } } )}  src={edit} className='w-5 cursor-pointer'></img>
                   </li>
                 ))}
               </ul>
