@@ -216,9 +216,18 @@ const SubConteudos: React.FC = () => {
           className="text-white bg-azulFalcaoSecundario px-2 rounded-md mb-2"
         >
           ← voltar
-        </button>
+        </button> <br/>
         
-        <h2 className="text-white text-2xl font-bold mb-4">Sub-conteúdos de { conteudo.nome }</h2>
+        <div className='flex flex-row items-center'>
+          <span className="text-white text-2xl font-bold">Sub-conteúdos de { conteudo.nome }</span>
+          
+          <div
+            className="bg-blue-500 w-14 ml-4 text-white p-2 rounded shadow flex items-center justify-center cursor-pointer hover:scale-105 transition-all"
+            onClick={() => setModalSubConteudoOpen(true)}
+          >
+            <span className="text-2xl font-bold">+</span>
+          </div>
+        </div>
         
         {subConteudos.map((subConteudo) => (
           <div key={subConteudo.id} className="px-4 mt-4 w-full">

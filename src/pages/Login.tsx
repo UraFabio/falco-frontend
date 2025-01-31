@@ -10,7 +10,7 @@ const Login: React.FC = () => {
   
   const navigate = useNavigate(); // Inicializa o hook para redirecionamento
 
-console.log('teste',API_URL)
+  // console.log('teste',API_URL)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

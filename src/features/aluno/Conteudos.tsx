@@ -86,7 +86,7 @@ const Conteudos: React.FC = () => {
 
   return (
     <>
-      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex justify-between items-center rounded-t-md">
+      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex sombra-preta justify-between items-center rounded-t-md">
         <div className="flex items-center space-x-4">
           <img src={logo} alt="logo falco" className="w-16 cursor-pointer" onClick={ () => { navigate('/aluno')} } />
           <h1 className="text-2xl font-bold">Olá, {nomeUsuario}!</h1>

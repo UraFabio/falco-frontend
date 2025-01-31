@@ -24,7 +24,7 @@ interface Questao {
     id: number;
     ciclo_id: number;
     enunciado: string | null;
-    dicas: string[] | null;
+    dicas?: string[] | null;
     imagens_url: string[] | null;
     resposta_correta: number | null;
     alternativas: string[] | null;
@@ -48,9 +48,7 @@ interface EstadoQuestao {
 }
 
 interface MostrarDicas {
-  [questaoId: number]: {
-    [indiceAlternativa: number]: boolean;
-  };
+  [questaoId: number]: boolean[]; // Um array de booleanos para cada questão, onde cada índice é uma dica
 }
   
 
@@ -91,10 +89,16 @@ const Ciclo: React.FC = () => {
         setVideoUrl(data.video_url);
         setQuestoes(data.questoes);
 
+        console.log(data.questoes)
+
          // Inicializa estadoQuestoes
          const estadoInicial: { [key: number]: EstadoQuestao } = {};
          data.questoes.forEach((questao: Questao) => {
            estadoInicial[questao.id] = { estado: 'naoRespondida', tentativas: 0 };
+           setMostrarDicas((prev) => ({
+            ...prev,
+            [questao.id]:  [false, false, false] // Inicializa com todas as dicas ocultas
+          }));
          });
          setEstadoQuestoes(estadoInicial);
 
@@ -109,13 +113,14 @@ const Ciclo: React.FC = () => {
     fetchCicloData();
   }, [ciclo]);
 
-  const toggleDica = (questaoId: number, index: number) => {
+  const toggleDica = (questaoId: number, dicaIndex: number) => {
     setMostrarDicas((prev) => ({
       ...prev,
-      [questaoId]: {
-        ...prev[questaoId],
-        [index]: !prev[questaoId]?.[index],
-      },
+      [questaoId]: prev[questaoId]
+        ? prev[questaoId].map((dica, index) =>
+            index === dicaIndex ? !dica : false // Fecha todas as dicas, exceto a que foi clicada
+          )
+        : [false, false, false], // Inicializa com todas as dicas ocultas
     }));
   };
 
@@ -188,6 +193,10 @@ const Ciclo: React.FC = () => {
         if (!response.ok) {
           throw new Error(`Erro ao atualizar falcoins do aluno ${usuario.nome_completo}`);
         }
+
+        usuario.falcoins += ciclo.falcoins
+
+        localStorage.setItem('usuario', JSON.stringify(usuario))
       } catch (error: any) {
         console.log(error)
       }
@@ -225,11 +234,11 @@ const Ciclo: React.FC = () => {
   const usuario: Usuario = usuarioString ? JSON.parse(usuarioString) : ({} as Usuario);
 
   const nomeUsuario = usuario.nome_completo || '{{ user_name }}';
-  const falcoins = usuario.falcoins || 0;
+  let falcoins = usuario.falcoins || 0;
 
   return (
     <>
-      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex justify-between items-center">
+      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex sombra-preta justify-between rounded-t-md items-center">
         <div className="flex items-center space-x-4">
         <img src={logo} alt="logo falco" className="w-16 cursor-pointer" onClick={ () => { navigate('/aluno')} } />
         <h1 className="text-2xl font-bold">Olá, {nomeUsuario}!</h1>
@@ -263,111 +272,142 @@ const Ciclo: React.FC = () => {
       </Modal>
 
 
-      <div className="p-4">
+      <div className="min-h-[calc(100vh-10rem)] bg-white bg-opacity-60 rounded-b-lg shadow-inner shadow-slate-800 ">
         {/* Video Section */}
         {mostrarSecao === 'video' && (
-          <div className="flex flex-col items-center">
+          <div className="p-4 flex flex-col items-center h-full">
             <iframe
                 src={videoUrl}
                 title="Ciclo Video"
-                className="w-full max-w-3xl h-64"
-                frameBorder="0"
+                className="md:w-4/5 rounded-xl border-none"
+                style={{ aspectRatio: '16/9' }}
                 allowFullScreen
             ></iframe>
-            <Button
-                variant="contained"
-                color="primary"
-                className="mt-4"
-                onClick={() => setMostrarSecao('questoes')}
-            >
+            <div className='flex flex-row w-full justify-end m-4'>
+              <Button variant="contained" color="primary" className="mt-4" onClick={() => setMostrarSecao('questoes')}>
                 Questões
-            </Button>
+              </Button>
+            </div>
           </div>
         )}
 
         {/* Questoes Section */}
         {mostrarSecao === 'questoes' && (
-          <div className="mt-4">
-            {questoes.map((questao) => (
-              <Box key={questao.id} className="bg-white p-4 mb-4 rounded shadow-md">
-                <h3 className="font-bold text-lg my-8">{questao.enunciado}</h3>
-                <div className="flex justify-evenly">
-                  {questao.imagens_url?.map((url, i) => (
-                    <iframe key={i} src={url} className="mb-2 max-w-full h-auto"></iframe>
-                  ))}
-                </div>
+          <div className="">
+            <button onClick={() => setMostrarSecao('video')} 
+              className=' text-white font-semibold text-xl m-4 bg-azulFalcaoSecundario px-2 rounded-md border w-fit text-nowrap border-black border-1'>
+                ◁ Vídeo
+            </button>
 
-                 <div className="flex mt-6 space-x-4">
-        {/* Alternativas à esquerda */}
-        <div className="flex-1 space-y-2">
-          {questao.alternativas?.map((alternativa, i) => (
-            <div key={i} className="relative flex items-center">
-              <Button
-                variant={respostas[questao.id] === i ? 'contained' : 'outlined'}
-                color={
-                  estadoQuestoes[questao.id]?.estado === 'correta'
-                    ? 'success'
-                    : estadoQuestoes[questao.id]?.estado === 'errada'
-                    ? 'error'
-                    : 'primary'
-                }
-                style={{
-                  width: '32px', // Tamanho do botão
-                  height: '25px', // Altura do botão
-                  borderRadius: '5px', // Bordas arredondadas
-                  minWidth: 'unset', // Remove largura mínima padrão
-                  padding: '0',
-                }}
-                disabled={estadoQuestoes[questao.id]?.estado === 'correta'}
-                onClick={() => handleSelectResposta(questao.id, i)}
-              />
-              <span className="ml-3">{alternativa}</span>
 
-              {/* Balão de Dica */}
-              {estadoQuestoes[questao.id]?.estado !== 'correta' &&
-                estadoQuestoes[questao.id]?.tentativas > 0 &&
-                questao.dicas &&
-                questao.dicas[i] && (
-                  <div className="absolute right-0 ml-4">
-                    
-                    {mostrarDicas[questao.id]?.[i] && (
-                      <div className="absolute top-0 right-full z-30 bg-gray-200 p-2 shadow-md rounded w-48">
-                        <p className="text-sm">{questao.dicas[i]}</p>
-                        <button
-                          className="text-red-500 text-xs mt-2"
-                          onClick={() => toggleDica(questao.id, i)}
-                        >
-                          Fechar
-                        </button>
-                      </div>
-                    )}
-                    <button
-                      className="text-blue-500 underline"
-                      onClick={() => toggleDica(questao.id, i)}
-                    >
-                      Mostrar Dica
-                    </button>
+            <div className='overflow-auto py-4 px-36'>
+              {questoes.map((questao, i) => (
+                <div 
+                key={questao.id} 
+                className={`${estadoQuestoes[questao.id]?.estado === 'correta'
+                  ? 'bg-green-100'
+                  : estadoQuestoes[questao.id]?.estado === 'errada'
+                  ? 'bg-red-100'
+                  : 'bg-white'}
+                  p-4 mb-4 rounded shadow-md relative`}>
+
+                  <h3 className='text-sm font-semibold  bg-azulBgAluno w-fit py-2 px-4 border border-black rounded-md shadow-md'>
+                    Questão {i+1}
+                  </h3>
+                  <span className="font-bold text-lg block my-8">{questao.enunciado}</span>
+
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {questao.imagens_url?.map((url, i) => (
+                      <iframe key={i} src={url} className="mb-2 max-w-full h-auto"></iframe>
+                    ))}
                   </div>
-                )}
-            </div>
-          ))}
-        </div>
 
-        
-      </div>
-              </Box>
-            ))}
-            <Button variant="contained" color="primary" className="mt-4" onClick={handleConferirRespostas}>
-              Conferir Respostas
-            </Button>
+                  {/* Alternativas à esquerda */}
+                  <div className="flex mt-6 space-x-4">
+                    <div className="flex-1 space-y-2">
+                      {questao.alternativas?.map((alternativa, i) => (
+                        <div key={i} className="relative flex items-center">
+                          <button
+                            onClick={() => handleSelectResposta(questao.id, i)}
+                            disabled={estadoQuestoes[questao.id]?.estado === 'correta'}
+                            style={{
+                              backgroundColor:
+                                respostas[questao.id] === i && estadoQuestoes[questao.id]?.estado === 'correta'
+                                  ? '#4CAF50' // Verde apenas para a alternativa selecionada correta
+                                  : respostas[questao.id] === i && estadoQuestoes[questao.id]?.estado === 'errada'
+                                  ? '#f44336' // Vermelho apenas para a alternativa selecionada errada
+                                  : respostas[questao.id] === i
+                                  ? '#2196F3' // Azul quando selecionado
+                                  : estadoQuestoes[questao.id]?.estado === 'correta'
+                                  ? '#c9c9c9' // Cinza para as não selecionadas se a resposta estiver correta
+                                  : 'white', //
+                              width: '32px',
+                              height: '28px',
+                              borderRadius: '5px',
+                              boxShadow: '0px 2px 5px rgba(0, 0, 0, .4)', // Sombra para efeito de elevação
+                              cursor: estadoQuestoes[questao.id]?.estado === 'correta' ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.3s ease-in-out',
+                            }}
+                          >
+                          </button>
+
+                          <span className="ml-3">{alternativa}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                      {/* Botão "DICAS" no canto inferior direito */}
+                      {estadoQuestoes[questao.id]?.estado !== 'correta' &&
+                        estadoQuestoes[questao.id]?.tentativas > 0 && questao.dicas && (
+                        <div className="absolute bottom-2 right-2">
+                          <button
+                            className=" text-azulBgAluno text-xl font-semibold p-3"
+                            onClick={() => toggleDica(questao.id, 0)}
+                          >
+                            DICAS
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Balões de dicas */}
+                      {questao.dicas?.map((dica, index) => (
+                        <div key={index} className="absolute bottom-2 right-24">
+
+                          {mostrarDicas[questao.id]?.[index] && (
+                            <div className="bg-azulBotao p-5 rounded-md">
+                              <h3> <strong>Dica{index+1}</strong> </h3>
+                              <p>{dica}</p>
+                              {questao.dicas && index < questao.dicas.length - 1 && (
+                                <button
+                                  onClick={() => toggleDica(questao.id, index + 1)} // Mostra a próxima dica
+                                >
+                                  +
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                </div>
+              ))}
+
+              <Button variant="contained" color="primary" onClick={handleConferirRespostas}>
+                Conferir Respostas
+              </Button>
+            </div>
+            
+            
           </div>
         )}
 
         {/* Finalizado */}
         {mostrarSecao === 'finalizado' && (
-          <div className="text-center h-[calc(100vh-12rem)] m-4 p-20 bg-slate-400 bg-opacity-50 rounded-lg">
-            <div className='bg-white rounded-lg h-full p-14'>
-              <span className="text-2xl font-bold mb-8 block">Parabéns! Você conseguiu!</span>
+          <div className="text-center h-[calc(100vh-12rem)] p-20">
+            <div className='bg-white rounded-lg gap-5 h-full p-14'>
+              <span className='text-7xl'>😄</span>
+              <span className="text-2xl font-bold my-4 block">Parabéns! Você conseguiu!</span>
               <Button variant="contained" color="primary" onClick={() => navigate('/aluno')}>
                 Voltar para tela inicial
               </Button>

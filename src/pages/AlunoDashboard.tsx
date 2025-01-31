@@ -9,6 +9,7 @@ import star from '../assets/star.svg';
 import todo from '../assets/todo_green.svg'
 import subjects from '../assets/subjects_purple.svg'
 import arrow_blue from '../assets/arrow_blue_right.svg'
+import arrow_white from '../assets/arrow_white_right.svg'
 const API_URL = import.meta.env.VITE_API_URL;
 
 
@@ -340,25 +341,25 @@ const AlunoDashboard: React.FC = () => {
               {subConteudosTodo.map((subConteudo) => (
                 <div key={subConteudo.sub_conteudo_id} className="px-4 mt-4 w-full">
                   <div
-                    className="flex flex-row bg-slate-300 p-4 rounded mb-1 shadow cursor-pointer w-2/4"
+                    className="flex flex-row bg-slate-300 p-4 rounded mb-1 shadow cursor-pointer min-w-2/4 max-w-full items-center"
                     onClick={() => toggleSectionTodo(subConteudo.sub_conteudo_id)}
                   >
-                    <h3 className="text-xl font-bold flex items-center">
-                      <img
-                        src={arrow_blue}
-                        alt='seta azul'
-                        className={`h-5 inline-block transform transition-transform duration-300 ${
-                          expandedSectionsTodo[subConteudo.sub_conteudo_id] ? 'rotate-90' : 'rotate-0'
-                        }`}
-                      />
-                      <span className="ml-2">{subConteudo.sub_conteudo_nome}</span>
-                    </h3>
+                    <img
+                      src={arrow_blue}
+                      alt="seta azul"
+                      className={`h-5 transition-transform duration-300 ${
+                        expandedSectionsTodo[subConteudo.sub_conteudo_id] ? 'rotate-90' : 'rotate-0'
+                      }`}
+                    />
+                    <span className="ml-2 text-xl font-bold flex-grow">
+                      {subConteudo.sub_conteudo_nome}
+                    </span>
                   </div>
-      
+                  
                   {expandedSectionsTodo[subConteudo.sub_conteudo_id] && (
                     <ul className="ml-4 mt-2">
                     {subConteudo.ciclos.map((ciclo: any) => (
-                      <li key={ciclo.id} className="flex justify-between bg-azulFalcao p-2 rounded mb-2 shadow">
+                      <li key={ciclo.id} className="flex justify-between bg-azulFalcao  w-3/4 p-2 rounded mb-2 shadow">
                         <div
                           className='cursor-pointer font-semibold'
                           onClick={() => handleOpenModal(ciclo)}
@@ -454,10 +455,10 @@ const AlunoDashboard: React.FC = () => {
           <div className='flex flex-col items-center m-auto'>
             <h2 id="modal-title" className='text-2xl'><strong>{selectedCiclo?.nome}</strong></h2>
             <button
-              className='flex justify-center items-center w-28 h-16 my-7 bg-white rounded-2xl border border-black hover:scale-110 transition-all'
+              className='flex justify-center items-center w-28 h-28 my-7 bg-azulBgAluno rounded-full border-black hover:scale-110 transition-all'
               onClick={() => handleCicloClick(selectedCiclo)} // Chama a função ao clicar
               >
-              <img  className='w-10' src={arrow_blue} alt="" />
+              <img  className='w-12' src={arrow_white} alt="" />
             </button>
           </div>
           <div className="flex flex-col gap-4">

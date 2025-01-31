@@ -11,6 +11,7 @@ import todo_green from '../../assets/todo_green.svg'
 import star_white from '../../assets/star_white.svg'
 import star_yellow from '../../assets/star.svg'
 import arrow_blue from '../../assets/arrow_blue_right.svg'
+import arrow_white from '../../assets/arrow_white_right.svg'
 
 
 
@@ -276,7 +277,7 @@ const SubConteudosCiclos: React.FC = () => {
 
   return (
     <>
-      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex justify-between items-center">
+      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex sombra-preta justify-between items-center">
         <div className="flex items-center space-x-4">
           <img src={logo} alt="logo falco" className="w-16 cursor-pointer" onClick={ () => { navigate('/aluno')} } />
           <h1 className="text-2xl font-bold">Olá, {nomeUsuario}!</h1>
@@ -348,20 +349,20 @@ const SubConteudosCiclos: React.FC = () => {
         
         {/* Modal para mostrar detalhes do ciclo */}
         <Modal
-          open={cicloModal}
-          onClose={handleCloseModal}
-          aria-labelledby="modal-title"
-          aria-describedby="modal-description"
-          className="flex w-2/3 items-center justify-center m-auto"
+        open={cicloModal}
+        onClose={handleCloseModal}
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+        className="flex w-2/3 items-center justify-center m-auto"
         >
           <div className="modal-container bg-slate-300 p-6 rounded-lg shadow-lg">
             <div className='flex flex-col items-center m-auto'>
               <h2 id="modal-title" className='text-2xl'><strong>{selectedCiclo?.nome}</strong></h2>
               <button
-                className='flex justify-center items-center w-28 h-16 my-7 bg-white rounded-2xl border border-black hover:scale-110 transition-all'
+                className='flex justify-center items-center w-28 h-28 my-7 bg-azulBgAluno rounded-full border-black hover:scale-110 transition-all'
                 onClick={() => handleCicloClick(selectedSubConteudo, selectedCiclo)} // Chama a função ao clicar
                 >
-                <img  className='w-10' src={arrow_blue} alt="" />
+                <img  className='w-12' src={arrow_white} alt="" />
               </button>
             </div>
             <div className="flex flex-col gap-4">

@@ -173,10 +173,10 @@ const SubConteudosCiclos: React.FC = () => {
 
             {expandedSections[subConteudo.id] && (
               <ul className="ml-4 mt-2">
-                {(ciclosBySubConteudo[subConteudo.id] || []).map((ciclo: any, index: number) => (
+                {(ciclosBySubConteudo[subConteudo.id] || []).map((ciclo: any) => (
                   <li key={ciclo.id} className="flex flex-row justify-between bg-gray-100 p-2 rounded mb-2 shadow">
                     <div>
-                      {`Ciclo ${index + 1} - ${ciclo.nome}`}
+                      {ciclo.nome}
                     </div>
                     <img onClick={() => navigate('/instrutor/ciclos/novo', { state: {materia, conteudo, ciclo } } )}  src={edit} className='w-5 cursor-pointer'></img>
                   </li>
