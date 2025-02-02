@@ -237,6 +237,24 @@ const Ciclo: React.FC = () => {
         console.log(error)
       }
 
+      try {
+        const response = await fetch(`${API_URL}/aluno/historico`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ usuario_id: usuario.id, ciclo_id: ciclo.id }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro ao registar ciclo no historico ${ciclo.nome}`);
+        }
+
+      } catch (error) {
+        console.log(error)
+      }
+
     } 
   };
 

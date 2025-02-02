@@ -10,6 +10,7 @@ import todo from '../assets/todo_green.svg'
 import subjects from '../assets/subjects_purple.svg'
 import arrow_blue from '../assets/arrow_blue_right.svg'
 import arrow_white from '../assets/arrow_white_right.svg'
+import clock from '../assets/clock.svg'
 const API_URL = import.meta.env.VITE_API_URL;
 
 
@@ -41,6 +42,15 @@ interface Ciclo {
   habilidadesabnt: string
 }
 
+interface cicloHistorico {
+  ciclo_nome: string
+  conteudo_nome: string
+  data_conclusao: string
+  ip: string
+  materia_nome: string
+  sub_conteudo_nome: string
+}
+
 const AlunoDashboard: React.FC = () => {
   const [menuOption, setMenuOption] = useState('inicio');
   //const [ciclosTodo, setCiclosTodos] = useState<any[]>([]);
@@ -51,21 +61,23 @@ const AlunoDashboard: React.FC = () => {
   const [expandedSectionsTodo, setExpandedSectionsTodo] = useState<{ [key: number]: boolean }>({});
   const [expandedSectionsFavoritos, setExpandedSectionsFavoritos] = useState<{ [key: number]: boolean }>({});
   const [cicloModal, setCicloModal] = useState(false)
-    const [selectedCiclo, setSelectedCiclo] = useState<Ciclo | null>({
-      id: 0,
-    data_criacao: '',
-    data_atualizacao: '',
-    sub_conteudo_id: 0,
-    video_url: '',
-    descricao: '',
-    nome: '',
-    objetivo: '',
-    requisitos: '',
-    ordem: 0,
-    questoes: 0,
-    ativo: true,
-    habilidadesabnt: ''
-    });
+  const [HistoricoCiclos, setHistoricoCiclos] = useState<cicloHistorico[]>([])
+  const [ordenarAscendente, setOrdenarAscendente] = useState(true);
+  const [selectedCiclo, setSelectedCiclo] = useState<Ciclo | null>({
+    id: 0,
+  data_criacao: '',
+  data_atualizacao: '',
+  sub_conteudo_id: 0,
+  video_url: '',
+  descricao: '',
+  nome: '',
+  objetivo: '',
+  requisitos: '',
+  ordem: 0,
+  questoes: 0,
+  ativo: true,
+  habilidadesabnt: ''
+  });
     
 
   const [modalLogoutOpen, setModalLogoutOpen] = useState(false);
@@ -124,6 +136,36 @@ const AlunoDashboard: React.FC = () => {
 
     fetchTodo()
   }, []);
+
+    // Função para formatar a data
+  const formatarData = (data: string) => {
+    const date = new Date(data);
+    return date.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  };
+
+
+  // Função para ordenar os ciclos
+  const ordenarCiclos = () => {
+    const ciclosOrdenados = [...HistoricoCiclos].sort((a, b) => {
+      const dateA = new Date(a.data_conclusao).getTime();
+      const dateB = new Date(b.data_conclusao).getTime();
+      return ordenarAscendente ? dateA - dateB : dateB - dateA;
+    });
+    setHistoricoCiclos(ciclosOrdenados);
+  };
+
+   // Alterar a ordem de classificação (crescente ou decrescente)
+   const toggleOrdenacao = () => {
+    setOrdenarAscendente(!ordenarAscendente);
+    ordenarCiclos();
+  };
 
    // Função para abrir o modal
    const handleOpenModal = (ciclo:Ciclo) => {
@@ -189,6 +231,7 @@ const AlunoDashboard: React.FC = () => {
           //setCiclosTodos(ciclosTodoData);
   
           break
+
         case 'materias':
           const materias = await fetch(`${API_URL}/aluno/materias`, {
             method: 'POST',
@@ -207,6 +250,7 @@ const AlunoDashboard: React.FC = () => {
           console.log(materiasData)
   
           break
+
         case 'favoritos':
           const favoritos = await fetch(`${API_URL}/aluno/favoritos`, {
             method: 'POST',
@@ -245,6 +289,25 @@ const AlunoDashboard: React.FC = () => {
 
           console.log(transformedFavoritosData)
   
+          break
+
+        case 'historico':
+          const historico = await fetch(`${API_URL}/aluno/historico?usuario_id=${usuario.id}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+          });
+          
+  
+          if (!historico.ok) {
+            throw new Error('Erro de autenticação');
+          }
+
+          const historicoData = await historico.json()
+
+          console.log(historicoData)
+          
+          setHistoricoCiclos(historicoData)
+
           break
       }
     } catch (error) {
@@ -324,16 +387,23 @@ const AlunoDashboard: React.FC = () => {
             <img src={subjects} alt='Subjects Icon' className='h-6 w-6 object-contain ml-2'></img>
           </button>
           <button
-            className={`flex items-center justify-center text-white py-6 px-4 w-full ${menuOption === 'favoritos' ? 'bg-azulHeaderAdmin scale-90 rounded-2xl border-2 border-black border-opacity-50' : 'bg-azulBotao rounded sombra-botao'}  hover:bg-azulHeaderAdmin  transition-all duration-300 ease-in-out`}
+            className={`flex items-center justify-center text-white py-6 px-4 w-full mb-4 ${menuOption === 'favoritos' ? 'bg-azulHeaderAdmin scale-90 rounded-2xl border-2 border-black border-opacity-50' : 'bg-azulBotao rounded sombra-botao'}  hover:bg-azulHeaderAdmin  transition-all duration-300 ease-in-out`}
             onClick={() => fetchMenuOption('favoritos')}
           >
             Favoritos
             <img src={star} alt='Star Icon' className='h-6 w-6 object-contain ml-2'></img>
           </button>
+          <button
+            className={`flex items-center justify-center text-white py-6 px-4 w-full mb-4 ${menuOption === 'historico' ? 'bg-azulHeaderAdmin scale-90 rounded-2xl border-2 border-black border-opacity-50' : 'bg-azulBotao rounded sombra-botao'}  hover:bg-azulHeaderAdmin  transition-all duration-300 ease-in-out`}
+            onClick={() => fetchMenuOption('historico')}
+          >
+            Histórico
+            <img src={clock} alt='Clock Icon' className='h-6 w-6 object-contain ml-2'></img>
+          </button>
         </div>
 
         {/* Main Content */}
-        <div className="w-3/4 m-4 mr-10 mb-10 rounded-lg overflow-auto bg-black bg-opacity-20 ">
+        <div className="w-3/4 m-4 mr-4 mb-6 rounded-lg overflow-auto bg-black bg-opacity-20 ">
           {menuOption === 'inicio' && (
             <>
               <span className="flex items-center sombra-botao w-fit text-white text-2xl font-bold bg-azulHeaderAdmin px-4 py-2 rounded-br-md">To-do <img src={todo} alt='Todo Icon' className='h-6 w-6 object-contain ml-2'></img></span>
@@ -439,7 +509,45 @@ const AlunoDashboard: React.FC = () => {
             </>
           )}
 
-          
+          {menuOption === 'historico' && (
+            <>
+              <span className="flex items-center sombra-botao w-fit text-white text-2xl font-bold bg-azulHeaderAdmin px-4 py-2 rounded-br-md">Histórico <img src={clock} alt='Clock Icon' className='h-6 w-6 object-contain ml-2'></img></span>
+              <div className='p-4 w-full'>
+                
+                <button onClick={toggleOrdenacao} className='flex flex-row items-center mb-2 text-white font-semibold bg-azulBgAdmin py-2 px-4 rounded-md'>
+                  Ordenar por:<span className='bg-azulBotao py-0.5 px-2 ml-3 rounded-md hover:scale-105 transition-all'> ({ordenarAscendente ? 'Mais recente' : 'Mais antigo'}) </span>
+                </button>
+
+                <table className="bg-azulBgAdmin rounded-md p-4 w-full">
+                  <thead className='text-white'>
+                    <tr>
+                      <th className="px-4 py-2">Ciclo</th>
+                      <th className="px-4 py-2">Data de Conclusão</th>
+                      <th className="px-4 py-2">Sub-Conteúdo</th>
+                      <th className="px-4 py-2">Conteúdo</th>
+                      <th className="px-4 py-2">Matéria</th>
+                      <th className="px-4 py-2">IP</th>
+                    </tr>
+                  </thead>
+                  <tbody className='font-normal text-sm'>
+                    {HistoricoCiclos.map((ciclo, index) => (
+                      <tr key={index} className={index % 2 === 0 ? "bg-gray-200" : "bg-gray-300"}>
+                        <td className="px-4 py-2">{ciclo.ciclo_nome}</td>
+                        <td className="px-4 py-2">{formatarData(ciclo.data_conclusao)}</td>
+                        <td className="px-4 py-2">{ciclo.sub_conteudo_nome}</td>
+                        <td className="px-4 py-2">{ciclo.conteudo_nome}</td>
+                        <td className="px-4 py-2">{ciclo.materia_nome}</td>
+                        <td className="px-4 py-2">{ciclo.ip}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+              </div>
+              
+            </>
+          )}
+
         </div>
       </div>
 
