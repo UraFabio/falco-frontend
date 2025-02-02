@@ -216,7 +216,25 @@ const Ciclo: React.FC = () => {
         }
 
       } catch (error) {
+        console.log(error)
+      }
 
+      try {
+        const response = await fetch(`${API_URL}/aluno/estado-ciclo`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ aluno_id: usuario.id, ciclo_id: ciclo.id, estado: 'concluido' }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro ao registrado conclusao do ciclo ${ciclo.nome}`);
+        }
+
+      } catch (error) {
+        console.log(error)
       }
 
     } 
@@ -316,9 +334,9 @@ const Ciclo: React.FC = () => {
                   </h3>
                   <span className="font-bold text-lg block my-8">{questao.enunciado}</span>
 
-                  <div className="flex flex-wrap justify-center gap-2">
+                  <div className="flex flex-col justify-center gap-2">
                     {questao.imagens_url?.map((url, i) => (
-                      <iframe key={i} src={url} className="mb-2 max-w-full h-auto"></iframe>
+                      <iframe key={i} src={url} className="mb-2 w-2/4 h-auto"></iframe>
                     ))}
                   </div>
 
@@ -359,7 +377,7 @@ const Ciclo: React.FC = () => {
 
                       {/* Botão "DICAS" no canto inferior direito */}
                       {estadoQuestoes[questao.id]?.estado !== 'correta' &&
-                        estadoQuestoes[questao.id]?.tentativas > 0 && questao.dicas && (
+                        estadoQuestoes[questao.id]?.tentativas > 0 && (questao.dicas?.length || 0) > 0 && (
                         <div className="absolute bottom-2 right-2">
                           <button
                             className=" text-azulBgAluno text-xl font-semibold p-3"

@@ -325,13 +325,13 @@ const SubConteudosCiclos: React.FC = () => {
 
               {expandedSections[subConteudo.sub_conteudo_id] && (
                 <ul className="ml-4 mt-2">
-                {subConteudo.ciclos.map((ciclo: any, index: number) => (
-                  <li key={ciclo.id} className="flex justify-between bg-azulFalcao p-2 rounded mb-2 shadow">
+                {subConteudo.ciclos.map((ciclo: any, _: number) => (
+                  <li key={ciclo.id} className={`flex justify-between ${ciclo.estado === 'concluido' ? 'bg-green-300' : 'bg-azulFalcao'} bg-azulFalcao p-2 rounded mb-2 shadow`}>
                     <div
                       className='cursor-pointer'
                       onClick={() => handleOpenModal(subConteudo, ciclo)}
                     >
-                      {`Ciclo ${index + 1} - ${ciclo.nome}`}
+                      {`${ciclo.estado === 'concluido' ? '✔️' : ''} ${ciclo.nome}`}
                     </div>
                     <div className='flex gap-4'>
                       <img onClick={() => handleTodoBotao(ciclo.id, subConteudo.sub_conteudo_id, ciclo.todo ? false : true )} src={ciclo.todo ? todo_green : todo_white} alt="todo icon white" className='w-6 cursor-pointer'/>

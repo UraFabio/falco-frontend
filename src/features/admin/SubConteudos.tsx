@@ -249,10 +249,10 @@ const SubConteudos: React.FC = () => {
 
             {expandedSections[subConteudo.id] && (
               <ul className="ml-4 mt-2">
-                {(ciclosBySubConteudo[subConteudo.id] || []).map((ciclo: any, index: number) => (
+                {(ciclosBySubConteudo[subConteudo.id] || []).map((ciclo: any, _: number) => (
                   <li key={ciclo.id} className="flex flex-row justify-between bg-gray-100 p-2 rounded mb-2 shadow">
                     <div>
-                      {`Ciclo ${index + 1} - ${ciclo.nome}`}
+                      {`${ciclo.nome}`}
                     </div>
                   </li>
                 ))}
