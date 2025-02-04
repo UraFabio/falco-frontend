@@ -6,6 +6,7 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import coins from '../assets/coins.svg';
 import logo from '../assets/logo-no-bg.png';
+import edit_white from '../assets/edit_white.svg';
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface Usuario {
@@ -39,6 +40,7 @@ const AdminDashboard: React.FC = () => {
   const [modalMateriaOpen, setModalMateriaOpen] = useState(false);
   const [modalUserOpen, setModalUserOpen] = useState(false);
   const [openSnackBar, setOpenSnackBar] = useState(false)
+  const [snackBarMessage, setSnackBarMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [novoUsuario, setNovoUsuario] = useState<NovoUsuario>({
     nome_completo: '',
@@ -54,6 +56,8 @@ const AdminDashboard: React.FC = () => {
     administradores: false,
     alunos: false,
   });
+  const [editUsuario, setEditUsuario] = useState(false)
+  const [idUsuario, setIdUsuario] = useState(-1)
 
   const navigate = useNavigate();
 
@@ -109,11 +113,16 @@ const AdminDashboard: React.FC = () => {
         setMaterias(materiasData);
         setFuncionarios(funcionariosData);
         setAlunos(alunosData);
+
+        console.log('funcionarios:', funcionariosData)
+        console.log('alunos: ', alunosData)
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
         localStorage.clear()
         navigate('/login'); // Redirecionar para /login em caso de erro
       }
+
+      
     };
     fetchData()
   }, []);
@@ -124,7 +133,7 @@ const AdminDashboard: React.FC = () => {
 
   
 
-  console.log(materias, funcionarios, alunos);
+  // console.log(materias, funcionarios, alunos);
 
   const handleMateriaClick = (materia: {}) => {
     navigate('/admin/conteudos', { state: { materia } });
@@ -146,6 +155,8 @@ const AdminDashboard: React.FC = () => {
         throw new Error('Nome da matéria inválido.')
       }
 
+      setNovaMateria(novaMateria.trim())
+
       const token = localStorage.getItem('token');
 
       const response = await fetch(`${API_URL}/admin/materias`, {
@@ -163,6 +174,7 @@ const AdminDashboard: React.FC = () => {
       setNovaMateria('');
       setModalMateriaOpen(false);
       setOpenSnackBar(true)
+      setSnackBarMessage('Matéria criada com sucesso!')
       setErrorMessage('')
     } catch (error:any) {
       console.error('Erro ao criar matéria:', error);
@@ -214,7 +226,9 @@ const AdminDashboard: React.FC = () => {
         setFuncionarios((prev) => [...prev, novoUsuarioCriado.funcionario]);
       } else if (perfilSelecionado === 'aluno') {
         setAlunos((prev) => [...prev, novoUsuarioCriado.aluno]);
+        console.log(novoUsuarioCriado.aluno)
       }
+
   
       // Resetar o estado para o próximo usuário
       setNovoUsuario({
@@ -227,6 +241,7 @@ const AdminDashboard: React.FC = () => {
       });
       setModalUserOpen(false);
       setOpenSnackBar(true)
+      setSnackBarMessage('Usuário criado com sucesso!')
       setErrorMessage('')
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
@@ -239,6 +254,80 @@ const AdminDashboard: React.FC = () => {
   //   setErrorMessage('')
   // }
 
+  const handleEditUser = async () => {
+    console.log('edit user, novoUsuario: ', novoUsuario)
+
+    try {
+
+      const token = localStorage.getItem('token');
+      const endpoint = perfilSelecionado === 'aluno' ? 'alunos' : 'funcionarios';
+  
+      const response = await fetch(`${API_URL}/admin/${endpoint}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, },
+        body: JSON.stringify({usuario_id: idUsuario , usuarioAtualizado: novoUsuario}),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar usuário: ' + response.status);
+      }
+
+  
+      // Atualizar o estado local com base no perfil selecionado
+      if (perfilSelecionado === 'instrutor' || perfilSelecionado === 'administrador') {
+        setFuncionarios((prev) =>
+          prev.map((func) =>
+            func.id === idUsuario
+              ? {
+                  ...func,
+                  login: novoUsuario.login,
+                  nome_completo: novoUsuario.nome_completo,
+                  ano_escolar: novoUsuario.ano_escolar,
+                  escola: novoUsuario.escola,
+                }
+              : func
+          )
+        );
+      } else if (perfilSelecionado === 'aluno') {
+        setAlunos((prev) =>
+          prev.map((aluno) =>
+            aluno.id === idUsuario
+              ? {
+                  ...aluno,
+                  login: novoUsuario.login,
+                  nome_completo: novoUsuario.nome_completo,
+                  ano_escolar: novoUsuario.ano_escolar,
+                  escola: novoUsuario.escola,
+                  materias: novoUsuario.materias
+                }
+              : aluno
+          )
+        );
+      }
+
+      setNovoUsuario({
+        nome_completo: '',
+        login: '',
+        senha: '',
+        escola: '',
+        ano_escolar: '',
+        materias: [],
+      });
+
+
+      setIdUsuario(-1)
+      setEditUsuario(false)
+
+      setModalUserOpen(false);
+      setOpenSnackBar(true)
+      setSnackBarMessage('Usuário atualizado com sucesso!')
+      setErrorMessage('')
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+      setErrorMessage('Error ao atualizar usuário.')
+    }
+  }
+
   const handleToggleAtivo = async (id: number, ativo: boolean, perfil: string) => {
     try {
       const token = localStorage.getItem('token');
@@ -247,7 +336,7 @@ const AdminDashboard: React.FC = () => {
       const response = await fetch(`${API_URL}/admin/${endpoint}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, },
-        body: JSON.stringify({ id, ativo: !ativo }),
+        body: JSON.stringify({ usuario_id: id, ativo: !ativo }),
         
       });
   
@@ -361,7 +450,7 @@ const AdminDashboard: React.FC = () => {
               <div className="text-white">
                 <div className="flex gap-4 items-center mb-2">
                   <button onClick={() => toggleSection('instrutores')}>
-                    {expandedSections.instrutores ? '▷' : '∇'}
+                    {expandedSections.instrutores ? '∇' : '▷'}
                   </button>
                   <h3 className="text-xl font-bold">Instrutores</h3>
                   <button
@@ -393,6 +482,22 @@ const AdminDashboard: React.FC = () => {
                           handleToggleAtivo(instrutor.id, instrutor.ativo, 'instrutor')
                         }
                       ></div>
+                      <img src={edit_white} alt="Edit icone" className=' w-4 cursor-pointer' 
+                        onClick={() => {
+                          setEditUsuario(true);
+                          setNovoUsuario({
+                            nome_completo: instrutor.nome_completo,
+                            login: instrutor.login,
+                            senha: '',
+                            ano_escolar: '',
+                            escola: '',
+                            materias: []
+                          });
+                          setPerfilSelecionado('instrutor');
+                          setIdUsuario(instrutor.id)
+                          setModalUserOpen(true);
+                        }}
+                      /> 
                       <span>{instrutor.nome_completo}</span>
                     </li>
                   ))}
@@ -401,7 +506,7 @@ const AdminDashboard: React.FC = () => {
 
               <div className="flex gap-4 items-center mb-2">
                 <button onClick={() => toggleSection('administradores')}>
-                  {expandedSections.administradores ? '▷' : '∇'}
+                  {expandedSections.administradores ? '∇' : '▷' }
                 </button>
                 <h3 className="text-xl font-bold">Administradores</h3>
                   <button
@@ -433,6 +538,22 @@ const AdminDashboard: React.FC = () => {
                           handleToggleAtivo(admin.id, admin.ativo, 'administrador')
                         }
                       ></div>
+                      <img src={edit_white} alt="Edit icone" className=' w-4 cursor-pointer' 
+                        onClick={() => {
+                          setEditUsuario(true);
+                          setNovoUsuario({
+                            nome_completo: admin.nome_completo,
+                            login: admin.login,
+                            senha: '',
+                            ano_escolar: '',
+                            escola: '',
+                            materias: []
+                          });
+                          setIdUsuario(admin.id)
+                          setPerfilSelecionado('administrador');
+                          setModalUserOpen(true);
+                        }}
+                      /> 
                       <span>{admin.nome_completo}</span>
                     </li>
                   ))}
@@ -441,7 +562,7 @@ const AdminDashboard: React.FC = () => {
 
                 <div className="flex gap-4 items-center mb-2">
                 <button onClick={() => toggleSection('alunos')}>
-                  {expandedSections.alunos ? '▷' : '∇'}
+                  {expandedSections.alunos ? '∇' : '▷'}
                 </button>
                 <h3 className="text-xl font-bold">Alunos</h3>
                   <button
@@ -469,6 +590,22 @@ const AdminDashboard: React.FC = () => {
                       }`}
                       onClick={() => handleToggleAtivo(aluno.id, aluno.ativo, 'aluno')}
                     ></div>
+                    <img src={edit_white} alt="Edit icone" className=' w-4 cursor-pointer' 
+                      onClick={() => {
+                        setEditUsuario(true);
+                        setNovoUsuario({
+                          nome_completo: aluno.nome_completo,
+                          login: aluno.login,
+                          senha: '',
+                          ano_escolar: aluno.ano_escolar,
+                          escola: aluno.escola,
+                          materias: Array.isArray(aluno.materias) && aluno.materias.every((item: number) => item !== null) ? aluno.materias : [],
+                        });
+                        setIdUsuario(aluno.id)
+                        setPerfilSelecionado('aluno');
+                        setModalUserOpen(true);
+                      }}
+                    /> 
                     <span>{aluno.nome_completo}</span>
                   </li>
                 ))}
@@ -488,7 +625,7 @@ const AdminDashboard: React.FC = () => {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert onClose={handleCloseSnackBar} severity="success" sx={{ width: "100%" }}>
-          Criado com sucesso!
+          {snackBarMessage}
         </Alert>
       </Snackbar>
 
@@ -515,7 +652,7 @@ const AdminDashboard: React.FC = () => {
             type="text"
             placeholder="Nome da Matéria"
             value={novaMateria}
-            onChange={(e) => setNovaMateria(e.target.value)}
+            onChange={(e) => setNovaMateria(e.target.value.trim())}
             className="border p-2 w-full mb-4 rounded"
           />
           <div className="flex justify-end">
@@ -532,7 +669,22 @@ const AdminDashboard: React.FC = () => {
         </Box>
       </Modal>
 
-      <Modal open={modalUserOpen} onClose={() => setModalUserOpen(false)} className="flex items-center justify-center">
+      {/* Create Usuário Modal */}
+      <Modal open={modalUserOpen}  className="flex items-center justify-center"
+        onClose={() => {
+          setModalUserOpen(false);
+          setNovoUsuario({
+            nome_completo: '',
+            login: '',
+            senha: '',
+            escola: '',
+            ano_escolar: '',
+            materias: [],
+          });  
+        }} 
+        
+      >
+
         <Box className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
           <h2 className="text-xl font-bold mb-4">Criar Novo Usuário</h2>
           <input
@@ -546,14 +698,14 @@ const AdminDashboard: React.FC = () => {
             type="text"
             placeholder="Login"
             value={novoUsuario.login}
-            onChange={(e) => setNovoUsuario({ ...novoUsuario, login: e.target.value })}
+            onChange={(e) => setNovoUsuario({ ...novoUsuario, login: e.target.value.trim() })}
             className="border p-2 w-full mb-4 rounded"
           />
           <input
             type="password"
             placeholder="Senha"
             value={novoUsuario.senha}
-            onChange={(e) => setNovoUsuario({ ...novoUsuario, senha: e.target.value })}
+            onChange={(e) => setNovoUsuario({ ...novoUsuario, senha: e.target.value.trim() })}
             className="border p-2 w-full mb-4 rounded"
           />
           {perfilSelecionado === 'aluno' && (
@@ -566,10 +718,10 @@ const AdminDashboard: React.FC = () => {
                 className="border p-2 w-full mb-4 rounded"
               />
               <input
-                type="text"
+                type="number"
                 placeholder="Ano Escolar"
                 value={novoUsuario.ano_escolar}
-                onChange={(e) => setNovoUsuario({ ...novoUsuario, ano_escolar: e.target.value })}
+                onChange={(e) => setNovoUsuario({ ...novoUsuario, ano_escolar: e.target.value.trim() })}
                 className="border p-2 w-full mb-4 rounded"
               />
               <h3 className="font-bold mb-2">Matérias</h3>
@@ -579,6 +731,7 @@ const AdminDashboard: React.FC = () => {
                     <input
                       type="checkbox"
                       value={materia.id}
+                      checked={novoUsuario.materias.includes(materia.id)}
                       onChange={(e) => {
                         const isChecked = e.target.checked;
                         setNovoUsuario((prev) => ({
@@ -596,10 +749,21 @@ const AdminDashboard: React.FC = () => {
             </>
           )}
           <div className="flex justify-end mt-4">
-            <Button variant="contained" color="primary" onClick={handleCreateUser}>
+            <Button variant="contained" color="primary" onClick={() => { editUsuario ?  handleEditUser() : handleCreateUser() }}>
               Criar
             </Button>
-            <Button variant="outlined" color="secondary" onClick={() => setModalUserOpen(false)}>
+            <Button variant="outlined" color="secondary" 
+            onClick={() => {
+              setModalUserOpen(false);
+              setNovoUsuario({
+                nome_completo: '',
+                login: '',
+                senha: '',
+                escola: '',
+                ano_escolar: '',
+                materias: [],
+              });
+            }}>
               Cancelar
             </Button>
           </div>

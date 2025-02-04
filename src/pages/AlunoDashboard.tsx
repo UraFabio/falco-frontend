@@ -494,7 +494,7 @@ const AlunoDashboard: React.FC = () => {
                           className='cursor-pointer font-semibold'
                           onClick={() => handleOpenModal(ciclo)}
                         >
-                          {`${ciclo.nome}`}
+                          {ciclo.nome}
                         </div>
                         <div className='flex gap-4'>
                           
