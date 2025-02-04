@@ -748,9 +748,9 @@ const AdminDashboard: React.FC = () => {
               </div>
             </>
           )}
-          <div className="flex justify-end mt-4">
+          <div className="flex justify-between mt-4">
             <Button variant="contained" color="primary" onClick={() => { editUsuario ?  handleEditUser() : handleCreateUser() }}>
-              Criar
+             {editUsuario ? 'Atualizar' : 'Criar'}
             </Button>
             <Button variant="outlined" color="secondary" 
             onClick={() => {
