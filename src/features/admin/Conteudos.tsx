@@ -7,6 +7,7 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import coins from '../../assets/coins.svg';
 import logo from '../../assets/logo-no-bg.png';
+import edit_white from '../../assets/edit_white.svg';
 const API_URL = import.meta.env.VITE_API_URL;
 
 
@@ -32,6 +33,7 @@ const Conteudos: React.FC = () => {
   const [modalLogoutOpen, setModalLogoutOpen] = useState(false);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [editConteudo, setEditConteudo] = useState(-1);
 
   const navigate = useNavigate();
 
@@ -112,29 +114,51 @@ const Conteudos: React.FC = () => {
 
   const handleCreateConteudo = async () => {
     const token = localStorage.getItem('token');
-
-    
-
     try {
 
       if (novoConteudo.length <= 1) {
         throw new Error('Nome do conteúdo inválido.')
       }
 
-      const response = await fetch(`${API_URL}/admin/conteudo`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ materia_id: materia.id, nome: novoConteudo }),
-      });
+      if (editConteudo > -1){
+        const response = await fetch(`${API_URL}/admin/conteudos`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ id: editConteudo, nome: novoConteudo }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Erro ao atualizar conteudo');
+        }
+  
+        const resp =  await response.json();
+        const conteudoAtualizado = resp.dados
+  
+        console.log(conteudoAtualizado)
+        setConteudos(conteudos.map(conteudo => 
+          conteudo.id === conteudoAtualizado.id 
+            ? { ...conteudo, nome: conteudoAtualizado.nome } 
+            : conteudo
+        ));
 
-      if (!response.ok) {
-        throw new Error('Erro ao criar conteudo');
+        
+      } else {
+        const response = await fetch(`${API_URL}/admin/conteudo`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ materia_id: materia.id, nome: novoConteudo }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Erro ao criar conteudo');
+        }
+  
+        const novoConteudoCriado = await response.json();
+  
+        console.log(novoConteudoCriado)
+        setConteudos([...conteudos, novoConteudoCriado.conteudo]);
       }
-
-      const novoConteudoCriado = await response.json();
-
-      console.log(novoConteudoCriado)
-      setConteudos([...conteudos, novoConteudoCriado.conteudo]);
+      
       setNovoConteudo('');
       setModalConteudoOpen(false);
       setOpenSnackBar(true)
@@ -225,19 +249,37 @@ const Conteudos: React.FC = () => {
         {conteudos.map((conteudo) => (
           <button
           key={conteudo.id}
-          className="bg-white p-4 rounded shadow text-center cursor-pointer hover:bg-gray-100"
+          className="bg-white p-4 relative rounded shadow text-center cursor-pointer hover:bg-gray-100"
           onClick={() => handleConteudoClick(conteudo)}
-        >
-          {conteudo.nome}
-        </button>
+          >
+            <div 
+            className='absolute -top-1 -right-1 bg-azulFalcao z-20 p-1 w-7 rounded-md hover'
+            onClick={(event) => {
+              event.stopPropagation(); // Impede que o evento suba para o botão
+              setNovoConteudo(conteudo.nome);
+              setEditConteudo(conteudo.id); 
+              setModalConteudoOpen(true);
+            }}
+            >
+              <img src={edit_white} alt="edit logo" />
+            </div>
+
+            <span >{conteudo.nome}</span>
+          </button>
         ))}
         
       </div>
 
       {/* Create Conteúdo Modal */}
-      <Modal open={modalConteudoOpen} onClose={() => setModalConteudoOpen(false)} className='flex items-center justify-center'>
+      <Modal open={modalConteudoOpen} 
+        onClose={() => {setModalConteudoOpen(false);
+          setNovoConteudo('');
+              setEditConteudo(-1); 
+        }} 
+        className='flex items-center justify-center'
+      >
         <Box className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-xl font-bold mb-4">Criar Novo Conteúdo</h2>
+          <h2 className="text-xl font-bold mb-4">{editConteudo > 0 ? "Editar Conteúdo" : "Criar Novo Conteúdo"}</h2>
           <input
             type="text"
             placeholder="Nome do Conteúdo"
@@ -247,9 +289,14 @@ const Conteudos: React.FC = () => {
           />
           <div className="flex justify-end">
             <Button variant="contained" color="primary" onClick={handleCreateConteudo}>
-              Criar
+            {editConteudo > 0 ? "Atualizar" : "Criar"}
             </Button>
-            <Button variant="outlined" color="secondary" onClick={() => setModalConteudoOpen(false)}>
+            <Button variant="outlined" color="secondary" 
+              onClick={() => {
+              setModalConteudoOpen(false);
+              setNovoConteudo('');
+              setEditConteudo(-1); 
+            }}>
               Cancelar
             </Button>
           </div>

@@ -5,6 +5,7 @@ import { Snackbar, Alert } from '@mui/material';
 import coins from '../../assets/coins.svg';
 import logo from '../../assets/logo-no-bg.png';
 import arrow_blue from '../../assets/arrow_blue_right.svg';
+import edit_white from '../../assets/edit_white.svg';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -36,6 +37,7 @@ const SubConteudos: React.FC = () => {
   const [modalLogoutOpen, setModalLogoutOpen] = useState(false);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [editSubConteudo, setEditSubConteudo] = useState(-1);
   
   
   useEffect(() => {
@@ -152,20 +154,48 @@ const SubConteudos: React.FC = () => {
 
       const token = localStorage.getItem('token');
 
-      const response = await fetch(`${API_URL}/admin/subConteudo`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ conteudo_id: conteudo.id, nome: novoSubConteudo }),
-      });
 
-      if (!response.ok) {
-        throw new Error('Erro ao criar sub-conteudo');
+      if (editSubConteudo > -1) {
+        const response = await fetch(`${API_URL}/admin/subConteudos`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ id: editSubConteudo, nome: novoSubConteudo }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Erro ao atualizar sub-conteudo');
+        }
+  
+        const resp =  await response.json();
+        const subConteudoAtualizado = resp.dados;
+  
+        console.log(subConteudoAtualizado)
+        
+        console.log(subConteudoAtualizado)
+        setSubConteudos(subConteudos.map(subConteudo => 
+          subConteudo.id === subConteudoAtualizado.id 
+            ? { ...subConteudo, nome: subConteudoAtualizado.nome } 
+            : subConteudo
+        ));
+        
+      } else {
+        const response = await fetch(`${API_URL}/admin/subConteudo`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ conteudo_id: conteudo.id, nome: novoSubConteudo }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Erro ao criar sub-conteudo');
+        }
+  
+        const novoSubConteudoCriado = await response.json();
+  
+        console.log(novoSubConteudoCriado)
+        setSubConteudos([...subConteudos, novoSubConteudoCriado.subConteudo]);
       }
 
-      const novoSubConteudoCriado = await response.json();
-
-      console.log(novoSubConteudoCriado)
-      setSubConteudos([...subConteudos, novoSubConteudoCriado.subConteudo]);
+      
       setNovoSubConteudo('');
       setModalSubConteudoOpen(false);
       setOpenSnackBar(true)
@@ -261,7 +291,7 @@ const SubConteudos: React.FC = () => {
         {subConteudos.map((subConteudo) => (
           <div key={subConteudo.id} className="px-4 mt-4 w-full">
             <div
-              className="flex flex-row bg-slate-300 p-4 rounded shadow mb-1 cursor-pointer w-2/4"
+              className="flex flex-row bg-slate-300 relative p-4 rounded shadow mb-1 cursor-pointer w-2/4"
               onClick={() => toggleSection(subConteudo.id)}
             >
               <h3 className="text-xl font-bold flex items-center">
@@ -272,8 +302,20 @@ const SubConteudos: React.FC = () => {
                     expandedSections[subConteudo.id] ? 'rotate-90' : 'rotate-0'
                   }`}
                 />
+                
                 <span className="ml-2">{subConteudo.nome}</span>
               </h3>
+              <div 
+                className='absolute -top-1 -right-1 bg-azulFalcao z-20 p-1 w-7 rounded-md hover'
+                onClick={(event) => {
+                  event.stopPropagation(); // Impede que o evento suba para o botão
+                  setNovoSubConteudo(subConteudo.nome);
+                  setEditSubConteudo(subConteudo.id); 
+                  setModalSubConteudoOpen(true);
+                }}
+                >
+                  <img src={edit_white} alt="edit logo" />
+                </div>
             </div>
 
             {expandedSections[subConteudo.id] && (
@@ -281,6 +323,7 @@ const SubConteudos: React.FC = () => {
                 {(ciclosBySubConteudo[subConteudo.id] || []).map((ciclo: any, _: number) => (
                   <li key={ciclo.id} className="flex flex-row justify-between bg-gray-100 p-2 rounded mb-2 shadow">
                     <div>
+                    
                       {`${ciclo.nome}`}
                     </div>
                   </li>
@@ -291,9 +334,15 @@ const SubConteudos: React.FC = () => {
         ))}
 
         {/* Create Sub-Conteúdo Modal */}
-        <Modal open={modalSubConteudoOpen} onClose={() => setModalSubConteudoOpen(false)} className='flex items-center justify-center'>
+        <Modal open={modalSubConteudoOpen} 
+          onClose={() => {setModalSubConteudoOpen(false);
+            setNovoSubConteudo('');
+              setEditSubConteudo(-1);
+          }} 
+          className='flex items-center justify-center'
+        >
           <Box className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Criar Novo Sub-Conteúdo</h2>
+            <h2 className="text-xl font-bold mb-4">{editSubConteudo > 0 ? "Editar Sub-Conteúdo" : "Criar Novo Sub-Conteúdo"}</h2>
             <input
               type="text"
               placeholder="Nome do Conteúdo"
@@ -303,9 +352,13 @@ const SubConteudos: React.FC = () => {
             />
             <div className="flex justify-end">
               <Button variant="contained" color="primary" onClick={handleCreateSubConteudo}>
-                Criar
+              {editSubConteudo > 0 ? "Atualizar" : "Criar"}
               </Button>
-              <Button variant="outlined" color="secondary" onClick={() => setModalSubConteudoOpen(false)}>
+              <Button variant="outlined" color="secondary"
+              onClick={() => {setModalSubConteudoOpen(false)
+                setNovoSubConteudo('');
+              setEditSubConteudo(-1);
+              }}>
                 Cancelar
               </Button>
             </div>
