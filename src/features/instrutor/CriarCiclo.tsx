@@ -55,6 +55,33 @@ const CriarCiclo: React.FC = () => {
   
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const tokenExp = localStorage.getItem('token_exp');
+
+    if (tokenExp) {
+      const tempoRestante = Number(tokenExp) - Date.now();
+
+      if (tempoRestante <= 0) {
+        console.log('Token expirado. Deslogando...');
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');
+        navigate('/login');
+      } else {
+        console.log(`Token expira em ${tempoRestante / 1000} segundos`);
+
+        // Configura um timer para deslogar automaticamente
+        setTimeout(() => {
+          console.log('Token expirado. Deslogando...');
+          localStorage.removeItem('usuario');
+          localStorage.removeItem('token');
+          localStorage.removeItem('token_exp');
+          navigate('/login');
+        }, tempoRestante);
+      }
+    }
+  }, [navigate]);
+
  useEffect(() => {
     
     if (ciclo) {
@@ -129,7 +156,9 @@ const CriarCiclo: React.FC = () => {
 
   // Logout Functionality
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');;
     navigate('/login');
   };
 

@@ -31,6 +31,33 @@ const Conteudos: React.FC = () => {
   const navigate = useNavigate();
 
 
+  useEffect(() => {
+    const tokenExp = localStorage.getItem('token_exp');
+
+    if (tokenExp) {
+      const tempoRestante = Number(tokenExp) - Date.now();
+
+      if (tempoRestante <= 0) {
+        console.log('Token expirado. Deslogando...');
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');
+        navigate('/login');
+      } else {
+        console.log(`Token expira em ${tempoRestante / 1000} segundos`);
+
+        // Configura um timer para deslogar automaticamente
+        setTimeout(() => {
+          console.log('Token expirado. Deslogando...');
+          localStorage.removeItem('usuario');
+          localStorage.removeItem('token');
+          localStorage.removeItem('token_exp');
+          navigate('/login');
+        }, tempoRestante);
+      }
+    }
+  }, [navigate]);
+
   // Fetch data
   useEffect(() => {
     //if (!materiaId) return;
@@ -52,7 +79,9 @@ const Conteudos: React.FC = () => {
         setConteudos(data);
       } catch (error) {
         console.error('Erro ao buscar conteúdos:', error);
-        localStorage.clear()
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');
         navigate('/login');
       }
     };
@@ -62,8 +91,6 @@ const Conteudos: React.FC = () => {
 
   console.log('conteudos: ', conteudos)
 
-  
-
   const handleConteudoClick = (conteudo: {}) => {
     navigate('/aluno/ciclos', { state: { materia, conteudo } });
   };
@@ -72,7 +99,9 @@ const Conteudos: React.FC = () => {
   
   // Logout Functionality
   const handleLogout = useCallback(() => {
-    localStorage.clear();
+    localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');;
     navigate('/login');
   }, [navigate]);
 
@@ -86,17 +115,17 @@ const Conteudos: React.FC = () => {
 
   return (
     <>
-      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex sombra-preta justify-between items-center rounded-t-md">
-        <div className="flex items-center space-x-4">
-          <img src={logo} alt="logo falco" className="w-16 cursor-pointer" onClick={ () => { navigate('/aluno')} } />
-          <h1 className="text-2xl font-bold">Olá, {nomeUsuario}!</h1>
+      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex justify-between items-center sombra-preta rounded-t-md flex-wrap sm:flex-nowrap">
+        <div className="flex items-center space-x-4 w-full sm:w-auto mb-4 sm:mb-0">
+          <img src={logo} alt="logo falco" className="w-16 cursor-pointer" onClick={() => navigate('/aluno')}/>
+          <h1 className="text-base sm:text-2xl font-bold">Olá, {nomeUsuario}!</h1>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 w-full sm:w-auto justify-between sm:justify-start">
           {usuario.perfil_id === 1 && (
-            <>
-              <img src={coins} alt="fal-coins" />
-              <span>Fal-coins: {falcoins}</span>
-            </>
+            <div className='flex justify-center items-center'>
+              <img src={coins} alt="fal-coins" className='w-7'/>
+              <span className='text-nowrap'>Fal-coins: {falcoins}</span>
+            </div>
           )}
           <Button variant="outlined" color="inherit" onClick={() => setModalLogoutOpen(true)}>
             Logout
@@ -121,13 +150,13 @@ const Conteudos: React.FC = () => {
 
       <div className="flex flex-col p-6 h-[calc(100vh-10rem)] min-w-full bg-azulBgAluno bg-opacity-60 rounded-b-lg shadow-inner shadow-slate-800">
         <button onClick={() => navigate('/aluno')} className='text-white bg-azulFalcaoSecundario px-2 rounded-md mb-2 border w-fit text-nowrap border-black border-1'>◁ Tela de início</button>
-        <div className='m-4 rounded-lg overflow-auto bg-black bg-opacity-20'>
+        <div className='sm:m-4 rounded-lg overflow-auto bg-black bg-opacity-20'>
           <span className="flex items-center sombra-botao w-fit text-white text-2xl font-bold bg-azulHeaderAdmin px-4 py-2 rounded-br-md">Conteúdos de {materia.nome} <img src={"/" + materia.imagem_url} alt='' className='w-10 object-contain ml-4'></img></span>
-          <div className="grid grid-cols-4 m-4 mt-8 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 m-4 mt-8 gap-4">
             {conteudos.map((conteudo) => (
               <button
               key={conteudo.id}
-              className="flex flex-col items-center justify-end bg-azulBotao text-white p-4 rounded shadow text-center cursor-pointer hover:bg-azulHeaderAdmin hover:scale-105 transition-transform sombra-botao"
+              className="flex flex-col items-center justify-center bg-azulBotao text-white p-4 rounded shadow text-center cursor-pointer hover:bg-azulHeaderAdmin hover:scale-105 transition-transform sombra-botao"
               onClick={() => handleConteudoClick(conteudo)}
               >
               {conteudo.nome}

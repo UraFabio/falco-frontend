@@ -38,7 +38,32 @@ const SubConteudos: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   
   
-  
+  useEffect(() => {
+    const tokenExp = localStorage.getItem('token_exp');
+
+    if (tokenExp) {
+      const tempoRestante = Number(tokenExp) - Date.now();
+
+      if (tempoRestante <= 0) {
+        console.log('Token expirado. Deslogando...');
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');
+        navigate('/login');
+      } else {
+        console.log(`Token expira em ${tempoRestante / 1000} segundos`);
+
+        // Configura um timer para deslogar automaticamente
+        setTimeout(() => {
+          console.log('Token expirado. Deslogando...');
+          localStorage.removeItem('usuario');
+          localStorage.removeItem('token');
+          localStorage.removeItem('token_exp');
+          navigate('/login');
+        }, tempoRestante);
+      }
+    }
+  }, [navigate]);
   
   // Fetch data
   useEffect(() => {
@@ -64,7 +89,9 @@ const SubConteudos: React.FC = () => {
 
       } catch (error) {
         console.error('Erro ao buscar sub-conteúdos:', error);
-        localStorage.clear()
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');
         navigate('/login');
       }
     };
@@ -152,7 +179,9 @@ const SubConteudos: React.FC = () => {
   
   // Logout Functionality
   const handleLogout = useCallback(() => {
-    localStorage.clear();
+    localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');;
     navigate('/login');
   }, [navigate]);
 

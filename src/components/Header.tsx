@@ -13,7 +13,9 @@ const Header: React.FC = () => {
   const falcoins = 100; // Exemplo: Pegue isso de um estado global ou do backend
 
   const handleLogout = () => {
-    localStorage.clear(); // Remove o token e outros dados
+    localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');; // Remove o token e outros dados
     navigate('/login'); // Redireciona para a página de login
   };
 

@@ -10,7 +10,24 @@ const Login: React.FC = () => {
   
   const navigate = useNavigate(); // Inicializa o hook para redirecionamento
 
-  // console.log('teste',API_URL)
+  const handleTokenExpiration = (token: string) => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expirationTime = payload.exp * 1000; // Convertendo para milissegundos
+
+      // Armazena a data de expiração no localStorage
+      localStorage.setItem('token_exp', expirationTime.toString());
+
+      console.log(`Token expira em: ${(expirationTime - Date.now()) / 1000} segundos`);
+    } catch (error) {
+      console.error('Erro ao processar o token:', error);
+      localStorage.removeItem('usuario');
+      localStorage.removeItem('token');
+      localStorage.removeItem('token_exp');
+      navigate('/login');
+    }
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +50,8 @@ const Login: React.FC = () => {
 
       localStorage.setItem('usuario', JSON.stringify(data.usuario));
       localStorage.setItem('token', data.token);
+
+      handleTokenExpiration(data.token);
 
       // Redireciona com base no perfil_id
       switch (data.usuario.perfil_id) {
@@ -62,13 +81,13 @@ const Login: React.FC = () => {
         </div>
       </header>
 
-      <div className="flex justify-center w-full min-max">
+      <div className="flex justify-center w-full">
         <form
           onSubmit={handleSubmit}
           className='p-6 flex flex-col items-center'
         >
-          <div className='flex flex-col items-center mb-8'>
-            <h1 className='text-3xl text-white font-bold mb-8 text-center whitespace-nowrap sombra-azul'>Seu tempo de estudo e qualidade</h1>
+          <div className='flex w-100 flex-col items-center mb-8'>
+            <h1 className='text-wrap text-3xl text-white font-bold mb-8 text-center whitespace-nowrap sombra-azul'>Seu tempo de estudo e qualidade</h1>
             <h1 className='text-5xl text-white font-bold mb-2 text-center whitespace-nowrap sombra-azul'>Começa agora</h1>
           </div>
 

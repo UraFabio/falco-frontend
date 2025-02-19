@@ -71,6 +71,34 @@ const SubConteudosCiclos: React.FC = () => {
   });
   const [selectedSubConteudo, setSelectedSubConteudo] = useState({})
 
+  useEffect(() => {
+    const tokenExp = localStorage.getItem('token_exp');
+
+    if (tokenExp) {
+      const tempoRestante = Number(tokenExp) - Date.now();
+
+      if (tempoRestante <= 0) {
+        console.log('Token expirado. Deslogando...');
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');
+        navigate('/login');
+      } else {
+        console.log(`Token expira em ${tempoRestante / 1000} segundos`);
+
+        // Configura um timer para deslogar automaticamente
+        setTimeout(() => {
+          console.log('Token expirado. Deslogando...');
+          localStorage.removeItem('usuario');
+          localStorage.removeItem('token');
+          localStorage.removeItem('token_exp');
+          navigate('/login');
+        }, tempoRestante);
+      }
+    }
+  }, [navigate]);
+
+
   // Fetch data
   useEffect(() => {
     const fetchSubConteudos = async () => {
@@ -116,7 +144,9 @@ const SubConteudosCiclos: React.FC = () => {
 
       } catch (error) {
         console.error('Erro ao buscar sub-conteúdos:', error);
-        localStorage.clear();
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');;
         navigate('/login');
       }
     };
@@ -157,7 +187,9 @@ const SubConteudosCiclos: React.FC = () => {
 
   // Logout Functionality
   const handleLogout = useCallback(() => {
-    localStorage.clear();
+    localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');;
     navigate('/login');
   }, [navigate]);
 
@@ -277,17 +309,17 @@ const SubConteudosCiclos: React.FC = () => {
 
   return (
     <>
-      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex sombra-preta justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <img src={logo} alt="logo falco" className="w-16 cursor-pointer" onClick={ () => { navigate('/aluno')} } />
-          <h1 className="text-2xl font-bold">Olá, {nomeUsuario}!</h1>
+      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex justify-between items-center sombra-preta rounded-t-md flex-wrap sm:flex-nowrap">
+        <div className="flex items-center space-x-4 w-full sm:w-auto mb-4 sm:mb-0">
+          <img src={logo} alt="logo falco" className="w-16 cursor-pointer" onClick={() => navigate('/aluno')} />
+          <h1 className="text-base sm:text-2xl font-bold">Olá, {nomeUsuario}!</h1>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 w-full sm:w-auto justify-between sm:justify-start">
           {usuario.perfil_id === 1 && (
-            <>
-              <img src={coins} alt="fal-coins" />
-              <span>Fal-coins: {falcoins}</span>
-            </>
+            <div className='flex justify-center items-center'>
+              <img src={coins} alt="fal-coins" className='w-7'/>
+              <span className='text-nowrap'>Fal-coins: {falcoins}</span>
+            </div>
           )}
           <Button variant="outlined" color="inherit" onClick={() => setModalLogoutOpen(true)}>
             Logout
@@ -303,7 +335,7 @@ const SubConteudosCiclos: React.FC = () => {
           ◁ Conteúdos
         </button>
 
-        <div className='m-4 pb-4 rounded-lg overflow-auto bg-black bg-opacity-20 '>
+        <div className='sm:m-4 pb-4 rounded-lg overflow-auto bg-black bg-opacity-20 '>
           <span className="flex items-center sombra-botao w-fit text-white text-2xl font-bold bg-azulHeaderAdmin px-4 py-2 rounded-br-md">Sub-conteúdos de {conteudo.nome} <img src={"/" + materia.imagem_url} alt='' className='w-10 object-contain ml-4'></img></span>
           {subConteudos.map((subConteudo) => (
             <div key={subConteudo.sub_conteudo_id} className="px-4 mt-4 w-full">
@@ -315,8 +347,8 @@ const SubConteudosCiclos: React.FC = () => {
                         <img
                           src={arrow_blue}
                           alt='seta azul'
-                          className={`h-5 inline-block transform transition-transform duration-300 ${
-                            expandedSections[subConteudo.sub_conteudo_id] ? 'rotate-90' : 'rotate-0'
+                          className={`h-5 transition-transform duration-300 ${
+                            expandedSections[subConteudo.sub_conteudo_id] ? 'rotate-180 sm:rotate-90' : 'rotate-90 sm:rotate-0'
                           }`}
                         />
                         <span className="ml-2">{subConteudo.sub_conteudo_nome}</span>
@@ -326,14 +358,14 @@ const SubConteudosCiclos: React.FC = () => {
               {expandedSections[subConteudo.sub_conteudo_id] && (
                 <ul className="ml-4 mt-2">
                 {subConteudo.ciclos.map((ciclo: any, _: number) => (
-                  <li key={ciclo.id} className={`flex justify-between ${ciclo.estado === 'concluido' ? 'bg-green-300' : 'bg-azulFalcao'} bg-azulFalcao p-2 rounded mb-2 shadow`}>
+                  <li key={ciclo.id} className={`flex justify-between gap-5 ${ciclo.estado === 'concluido' ? 'bg-green-300' : 'bg-azulFalcao'} bg-azulFalcao p-2 rounded mb-2 shadow`}>
                     <div
-                      className='cursor-pointer'
+                      className='cursor-pointer flex-1'
                       onClick={() => handleOpenModal(subConteudo, ciclo)}
                     >
                       {`${ciclo.estado === 'concluido' ? '✔️' : ''} ${ciclo.nome}`}
                     </div>
-                    <div className='flex gap-4'>
+                    <div className='flex gap-4 items-center'>
                       <img onClick={() => handleTodoBotao(ciclo.id, subConteudo.sub_conteudo_id, ciclo.todo ? false : true )} src={ciclo.todo ? todo_green : todo_white} alt="todo icon white" className='w-6 cursor-pointer'/>
                       <img onClick={() => handleFavoritoBotao(ciclo.id, subConteudo.sub_conteudo_id, ciclo.favoritos ? false : true )} src={ciclo.favoritos ? star_yellow : star_white} alt="star icon white" className='w-6 cursor-pointer'/>
                     </div>
@@ -344,8 +376,6 @@ const SubConteudosCiclos: React.FC = () => {
             </div>
           ))}
         </div>
-        
-
         
         {/* Modal para mostrar detalhes do ciclo */}
         <Modal
@@ -362,14 +392,14 @@ const SubConteudosCiclos: React.FC = () => {
                 className='flex justify-center items-center w-28 h-28 my-7 bg-azulBgAluno rounded-full border-black hover:scale-110 transition-all'
                 onClick={() => handleCicloClick(selectedSubConteudo, selectedCiclo)} // Chama a função ao clicar
                 >
-                <img  className='w-12' src={arrow_white} alt="" />
+                <img  className='w-12 rotate-90 sm:rotate-0' src={arrow_white} alt="" />
               </button>
             </div>
             <div className="flex flex-col gap-4">
-              <p><strong>Descrição:</strong> {selectedCiclo?.descricao}</p>
-              <p><strong>Objetivo:</strong> {selectedCiclo?.objetivo}</p>
-              <p><strong>Requisitos:</strong> {selectedCiclo?.requisitos}</p>
-              { selectedCiclo?.habilidadesabnt ? <p><strong>Habilidades BNCC:</strong> {selectedCiclo?.habilidadesabnt}</p> : ''}
+              <p className='whitespace-pre-wrap'><strong>Descrição:</strong> {selectedCiclo?.descricao}</p>
+              <p className='whitespace-pre-wrap'><strong>Objetivo:</strong> {selectedCiclo?.objetivo}</p>
+              <p className='whitespace-pre-wrap'><strong>Requisitos:</strong> {selectedCiclo?.requisitos}</p>
+              { selectedCiclo?.habilidadesabnt ? <p className='whitespace-pre-wrap'><strong>Habilidades BNCC:</strong> {selectedCiclo?.habilidadesabnt}</p> : ''}
               
             </div>
           </div>

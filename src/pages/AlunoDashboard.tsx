@@ -11,6 +11,7 @@ import subjects from '../assets/subjects_purple.svg'
 import arrow_blue from '../assets/arrow_blue_right.svg'
 import arrow_white from '../assets/arrow_white_right.svg'
 import clock from '../assets/clock.svg'
+import menu from '../assets/menu.svg'
 const API_URL = import.meta.env.VITE_API_URL;
 
 
@@ -49,10 +50,13 @@ interface cicloHistorico {
   ip: string
   materia_nome: string
   sub_conteudo_nome: string
+  tentativas_total: number
+  total_questoes: number
 }
 
 const AlunoDashboard: React.FC = () => {
   const [menuOption, setMenuOption] = useState('inicio');
+  const [isSideBarOpen, setIsSideBarOpen] = useState(false);
   //const [ciclosTodo, setCiclosTodos] = useState<any[]>([]);
   const [materias, setMaterias] = useState<any[]>([]);
   //const [ciclosFavoritos, setCiclosFavoritos] = useState<any[]>([])
@@ -62,7 +66,7 @@ const AlunoDashboard: React.FC = () => {
   const [expandedSectionsFavoritos, setExpandedSectionsFavoritos] = useState<{ [key: number]: boolean }>({});
   const [cicloModal, setCicloModal] = useState(false)
   const [HistoricoCiclos, setHistoricoCiclos] = useState<cicloHistorico[]>([])
-  const [ordenarAscendente, setOrdenarAscendente] = useState(true);
+  const [ordenarAscendente, setOrdenarAscendente] = useState(false);
   const [selectedCiclo, setSelectedCiclo] = useState<Ciclo | null>({
     id: 0,
   data_criacao: '',
@@ -84,6 +88,33 @@ const AlunoDashboard: React.FC = () => {
 
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+
+  useEffect(() => {
+    const tokenExp = localStorage.getItem('token_exp');
+
+    if (tokenExp) {
+      const tempoRestante = Number(tokenExp) - Date.now();
+
+      if (tempoRestante <= 0) {
+        console.log('Token expirado. Deslogando...');
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');
+        navigate('/login');
+      } else {
+        console.log(`Token expira em ${tempoRestante / 1000} segundos`);
+
+        // Configura um timer para deslogar automaticamente
+        setTimeout(() => {
+          console.log('Token expirado. Deslogando...');
+          localStorage.removeItem('usuario');
+          localStorage.removeItem('token');
+          localStorage.removeItem('token_exp');
+          navigate('/login');
+        }, tempoRestante);
+      }
+    }
+  }, [navigate]);
 
   // Fetch data
   useEffect(() => {
@@ -128,7 +159,9 @@ const AlunoDashboard: React.FC = () => {
         //setCiclosTodos(ciclosTodoData);
       } catch (error) {
         console.error('Erro ao buscar ciclos do to-do', error);
-        localStorage.clear();
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');;
         navigate('/login');
       }
       
@@ -136,6 +169,14 @@ const AlunoDashboard: React.FC = () => {
 
     fetchTodo()
   }, []);
+
+  useEffect(() => {
+    ordenarCiclos();
+  }, [ordenarAscendente]);
+
+  const toggleSidebar = () => {
+    setIsSideBarOpen(!isSideBarOpen);
+  };
 
     // Função para formatar a data
   const formatarData = (data: string) => {
@@ -163,8 +204,7 @@ const AlunoDashboard: React.FC = () => {
 
    // Alterar a ordem de classificação (crescente ou decrescente)
    const toggleOrdenacao = () => {
-    setOrdenarAscendente(!ordenarAscendente);
-    ordenarCiclos();
+    setOrdenarAscendente((prev) => !prev);
   };
 
    // Função para abrir o modal
@@ -306,13 +346,22 @@ const AlunoDashboard: React.FC = () => {
 
           console.log(historicoData)
           
-          setHistoricoCiclos(historicoData)
+
+          const ciclosOrdenados = [...historicoData].sort((a, b) => {
+            const dateA = new Date(a.data_conclusao).getTime();
+            const dateB = new Date(b.data_conclusao).getTime();
+            return ordenarAscendente ? dateA - dateB : dateB - dateA;
+          });
+          setHistoricoCiclos(ciclosOrdenados);
+
 
           break
       }
     } catch (error) {
         console.error('Erro ao buscar dados:', error);
-        // localStorage.clear()
+        // localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');
         //navigate('/login');
     }
     
@@ -338,7 +387,9 @@ const AlunoDashboard: React.FC = () => {
 
   // Logout Functionality
   const handleLogout = useCallback(() => {
-    localStorage.clear();
+    localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');;
     navigate('/login');
   }, [navigate]);
 
@@ -350,18 +401,21 @@ const AlunoDashboard: React.FC = () => {
   const falcoins = usuario.falcoins || 0;
 
   return (
-    <>
-      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex justify-between items-center sombra-preta rounded-t-md">
-        <div className="flex items-center space-x-4">
+    <div className='relative'>
+      <header className="bg-azulFalcaoSecundario text-white py-4 px-8 flex justify-between items-center sombra-preta rounded-t-md flex-wrap sm:flex-nowrap">
+        <div className="flex items-center space-x-4 w-full sm:w-auto mb-4 sm:mb-0">
           <img src={logo} alt="logo falco" className="w-16" />
-          <h1 className="text-2xl font-bold">Olá, {nomeUsuario}!</h1>
+          <h1 className="text-base sm:text-2xl font-bold">Olá, {nomeUsuario}!</h1>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 w-full sm:w-auto justify-between sm:justify-start">
+          <div className='flex justify-center items-center sm:hidden'>
+            <img src={menu} alt="Abrir Menu" className="h-10 w-10 cursor-pointer" onClick={toggleSidebar} />
+          </div>
           {usuario.perfil_id === 1 && (
-            <>
-              <img src={coins} alt="fal-coins" />
-              <span>Fal-coins: {falcoins}</span>
-            </>
+            <div className='flex justify-center items-center'>
+              <img src={coins} alt="fal-coins" className='w-7'/>
+              <span className='text-nowrap'>Fal-coins: {falcoins}</span>
+            </div>
           )}
           <Button variant="outlined" color="inherit" onClick={() => setModalLogoutOpen(true)}>
             Logout
@@ -369,9 +423,76 @@ const AlunoDashboard: React.FC = () => {
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-10rem)] min-w-full bg-azulBgAluno bg-opacity-60 rounded-b-lg shadow-inner shadow-slate-800">
+      {/* Overlay escuro */}
+      {isSideBarOpen && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-5" onClick={toggleSidebar}></div>
+      )}
+
+      {/* Barra Lateral */}
+      <div
+        className={`fixed top-0 left-0 h-full z-10 w-64 bg-azulBgAluno p-4 flex flex-col items-center transition-transform duration-300 ease-in-out ${
+          isSideBarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Botão para fechar o menu */}
+        <button className="text-white mb-4 self-end" onClick={toggleSidebar}>
+           ❌
+        </button>
+
+        {/* Botões do menu */}
+        <button
+          className={`flex items-center justify-center text-white py-6 px-4 w-full mb-4 ${
+            menuOption === "inicio"
+              ? "bg-azulHeaderAdmin scale-90 rounded-2xl border-2 border-black border-opacity-50"
+              : "bg-azulBotao rounded sombra-botao"
+          } hover:bg-azulHeaderAdmin transition-all duration-300 ease-in-out`}
+          onClick={() => fetchMenuOption("inicio")}
+        >
+          Início
+          <img src={todo} alt="Todo Icon" className="h-6 w-6 object-contain ml-2" />
+        </button>
+
+        <button
+          className={`flex items-center justify-center text-white py-6 px-4 w-full mb-4 ${
+            menuOption === "materias"
+              ? "bg-azulHeaderAdmin scale-90 rounded-2xl border-2 border-black border-opacity-50"
+              : "bg-azulBotao rounded sombra-botao"
+          } hover:bg-azulHeaderAdmin transition-all duration-300 ease-in-out`}
+          onClick={() => fetchMenuOption("materias")}
+        >
+          Matérias
+          <img src={subjects} alt="Subjects Icon" className="h-6 w-6 object-contain ml-2" />
+        </button>
+
+        <button
+          className={`flex items-center justify-center text-white py-6 px-4 w-full mb-4 ${
+            menuOption === "favoritos"
+              ? "bg-azulHeaderAdmin scale-90 rounded-2xl border-2 border-black border-opacity-50"
+              : "bg-azulBotao rounded sombra-botao"
+          } hover:bg-azulHeaderAdmin transition-all duration-300 ease-in-out`}
+          onClick={() => fetchMenuOption("favoritos")}
+        >
+          Favoritos
+          <img src={star} alt="Star Icon" className="h-6 w-6 object-contain ml-2" />
+        </button>
+
+        <button
+          className={`flex items-center justify-center text-white py-6 px-4 w-full mb-4 ${
+            menuOption === "historico"
+              ? "bg-azulHeaderAdmin scale-90 rounded-2xl border-2 border-black border-opacity-50"
+              : "bg-azulBotao rounded sombra-botao"
+          } hover:bg-azulHeaderAdmin transition-all duration-300 ease-in-out`}
+          onClick={() => fetchMenuOption("historico")}
+        >
+          Histórico
+          <img src={clock} alt="Clock Icon" className="h-6 w-6 object-contain ml-2" />
+        </button>
+      </div>
+
+
+      <div className="flex sm:h-[calc(100vh-10rem)] min-w-full bg-azulBgAluno bg-opacity-60 rounded-b-lg shadow-inner shadow-slate-800">
         {/* Sidebar */}
-        <div className="text-lg w-1/4 bg-azulAluno flex flex-col items-center p-4">
+        <div className="text-lg w-1/4 bg-azulAluno hidden sm:flex flex-col items-center p-4">
           <button
             className={`flex items-center justify-center text-white py-6 px-4 w-full mb-4 ${menuOption === 'inicio' ? 'bg-azulHeaderAdmin scale-90 rounded-2xl border-2 border-black border-opacity-50' : 'bg-azulBotao rounded sombra-botao'}  hover:bg-azulHeaderAdmin   transition-all duration-300 ease-in-out`}
              onClick={() => fetchMenuOption('inicio')}
@@ -403,7 +524,7 @@ const AlunoDashboard: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="w-3/4 m-4 mr-4 mb-6 rounded-lg overflow-auto bg-black bg-opacity-20 ">
+        <div className="sm:w-3/4 m-4 mr-4 mb-6 rounded-lg overflow-auto bg-black bg-opacity-20 ">
           {menuOption === 'inicio' && (
             <>
               <span className="flex items-center sombra-botao w-fit text-white text-2xl font-bold bg-azulHeaderAdmin px-4 py-2 rounded-br-md">To-do <img src={todo} alt='Todo Icon' className='h-6 w-6 object-contain ml-2'></img></span>
@@ -418,10 +539,10 @@ const AlunoDashboard: React.FC = () => {
                       src={arrow_blue}
                       alt="seta azul"
                       className={`h-5 transition-transform duration-300 ${
-                        expandedSectionsTodo[subConteudo.sub_conteudo_id] ? 'rotate-90' : 'rotate-0'
+                        expandedSectionsTodo[subConteudo.sub_conteudo_id] ? 'rotate-180 sm:rotate-90' : 'rotate-90 sm:rotate-0'
                       }`}
                     />
-                    <span className="ml-2 text-xl font-bold flex-grow">
+                    <span className="ml-2 sm:text-xl font-bold flex-grow">
                       {subConteudo.sub_conteudo_nome}
                     </span>
                   </div>
@@ -429,7 +550,7 @@ const AlunoDashboard: React.FC = () => {
                   {expandedSectionsTodo[subConteudo.sub_conteudo_id] && (
                     <ul className="ml-4 mt-2">
                     {subConteudo.ciclos.map((ciclo: any) => (
-                      <li key={ciclo.id} className="flex justify-between bg-azulFalcao  w-3/4 p-2 rounded mb-2 shadow">
+                      <li key={ciclo.id} className="flex justify-between bg-azulFalcao text-xs sm:text-sm sm:w-3/4 p-2 rounded mb-2 shadow">
                         <div
                           className='cursor-pointer font-semibold'
                           onClick={() => handleOpenModal(ciclo)}
@@ -448,7 +569,7 @@ const AlunoDashboard: React.FC = () => {
           {menuOption === 'materias' && (
             <>
               <span className="flex items-center sombra-botao w-fit text-white text-2xl font-bold bg-azulHeaderAdmin px-4 py-2 rounded-br-md">Matérias <img src={subjects} alt='Subjects Icon' className='h-6 w-6 object-contain ml-2'></img></span>
-              <div className="grid grid-cols-4 m-4 mt-8 gap-4 ">
+              <div className="grid grid-cols-3 sm:grid-cols-4 m-4 mt-8 gap-4 ">
                 {materias.map((materia: any) => (
                   <button
                   key={materia.id}
@@ -471,25 +592,25 @@ const AlunoDashboard: React.FC = () => {
                 {subConteudosFavoritos.map((subConteudo) => (
                 <div key={subConteudo.sub_conteudo_id} className="px-4 mt-4 w-full">
                   <div
-                    className="flex flex-row bg-slate-300 p-4 rounded shadow mb-1 cursor-pointer w-2/4"
+                    className="flex flex-row bg-slate-300 p-4 rounded mb-1 shadow cursor-pointer min-w-2/4 max-w-full items-center"
                     onClick={() => toggleSectionFavoritos(subConteudo.sub_conteudo_id)}
                   >
-                    <h3 className="text-xl font-bold flex items-center">
-                      <img
-                        src={arrow_blue}
-                        alt='seta azul'
-                        className={`h-5 inline-block transform transition-transform duration-300 ${
-                          expandedSectionsFavoritos[subConteudo.sub_conteudo_id] ? 'rotate-90' : 'rotate-0'
-                        }`}
-                      />
-                      <span className="ml-2">{subConteudo.sub_conteudo_nome}</span>
-                    </h3>
+                    <img
+                      src={arrow_blue}
+                      alt="seta azul"
+                      className={`h-5 transition-transform duration-300 ${
+                        expandedSectionsFavoritos[subConteudo.sub_conteudo_id] ? 'rotate-180 sm:rotate-90' : 'rotate-90 sm:rotate-0'
+                      }`}
+                    />
+                    <span className="ml-2 sm:text-xl font-bold flex-grow">
+                      {subConteudo.sub_conteudo_nome}
+                    </span>
                   </div>
       
                   {expandedSectionsFavoritos[subConteudo.sub_conteudo_id] && (
                     <ul className="ml-4 mt-2">
                     {subConteudo.ciclos.map((ciclo: any) => (
-                      <li key={ciclo.id} className="flex justify-between bg-azulFalcao p-2 rounded mb-2 shadow">
+                      <li key={ciclo.id} className="flex justify-between bg-azulFalcao text-xs sm:text-sm p-2 rounded mb-2 shadow">
                         <div
                           className='cursor-pointer font-semibold'
                           onClick={() => handleOpenModal(ciclo)}
@@ -512,37 +633,38 @@ const AlunoDashboard: React.FC = () => {
           {menuOption === 'historico' && (
             <>
               <span className="flex items-center sombra-botao w-fit text-white text-2xl font-bold bg-azulHeaderAdmin px-4 py-2 rounded-br-md">Histórico <img src={clock} alt='Clock Icon' className='h-6 w-6 object-contain ml-2'></img></span>
-              <div className='p-4 w-full'>
+              <div className='p-4 w-full h-full'>
                 
                 <button onClick={toggleOrdenacao} className='flex flex-row items-center mb-2 text-white font-semibold bg-azulBgAdmin py-2 px-4 rounded-md'>
-                  Ordenar por:<span className='bg-azulBotao py-0.5 px-2 ml-3 rounded-md hover:scale-105 transition-all'> ({ordenarAscendente ? 'Mais recente' : 'Mais antigo'}) </span>
+                  Ordenar por:<span className='bg-azulBotao py-0.5 px-2 ml-3 rounded-md hover:scale-105 transition-all'> ({ordenarAscendente ? 'Mais antigo primeiro' : 'Mais recente primeiro'}) </span>
                 </button>
 
-                <table className="bg-azulBgAdmin rounded-md p-4 w-full">
-                  <thead className='text-white'>
-                    <tr>
-                      <th className="px-4 py-2">Ciclo</th>
-                      <th className="px-4 py-2">Data de Conclusão</th>
-                      <th className="px-4 py-2">Sub-Conteúdo</th>
-                      <th className="px-4 py-2">Conteúdo</th>
-                      <th className="px-4 py-2">Matéria</th>
-                      <th className="px-4 py-2">IP</th>
-                    </tr>
-                  </thead>
-                  <tbody className='font-normal text-sm'>
-                    {HistoricoCiclos.map((ciclo, index) => (
-                      <tr key={index} className={index % 2 === 0 ? "bg-gray-200" : "bg-gray-300"}>
-                        <td className="px-4 py-2">{ciclo.ciclo_nome}</td>
-                        <td className="px-4 py-2">{formatarData(ciclo.data_conclusao)}</td>
-                        <td className="px-4 py-2">{ciclo.sub_conteudo_nome}</td>
-                        <td className="px-4 py-2">{ciclo.conteudo_nome}</td>
-                        <td className="px-4 py-2">{ciclo.materia_nome}</td>
-                        <td className="px-4 py-2">{ciclo.ip}</td>
+                <div>
+                  <table className="bg-azulBgAdmin rounded-md p-4 w-full">
+                    <thead className='text-white'>
+                      <tr>
+                        <th className="px-4 py-2">Ciclo</th>
+                        <th className="px-4 py-2">Data de Conclusão</th>
+                        <th className="px-4 py-2">Sub-Conteúdo</th>
+                        <th className="px-4 py-2">Conteúdo</th>
+                        <th className="px-4 py-2">Matéria</th>
+                        <th className="px-4 py-2">Tentativas/Questões</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-
+                    </thead>
+                    <tbody className='font-normal text-center text-sm'>
+                      {HistoricoCiclos.map((ciclo, index) => (
+                        <tr key={index} className={index % 2 === 0 ? "bg-gray-200" : "bg-gray-300"}>
+                          <td className="px-4 border-x border-azulBgAdmin py-2">{ciclo.ciclo_nome}</td>
+                          <td className="px-4 border-x border-azulBgAdmin py-2">{formatarData(ciclo.data_conclusao)}</td>
+                          <td className="px-4 border-x border-azulBgAdmin py-2">{ciclo.sub_conteudo_nome}</td>
+                          <td className="px-4 border-x border-azulBgAdmin py-2">{ciclo.conteudo_nome}</td>
+                          <td className="px-4 border-x border-azulBgAdmin py-2">{ciclo.materia_nome}</td>
+                          <td className="px-4 border-x border-azulBgAdmin py-2">{ciclo.tentativas_total? `${ciclo.tentativas_total}/${ciclo.total_questoes}` : "0/0"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
               
             </>
@@ -566,7 +688,7 @@ const AlunoDashboard: React.FC = () => {
               className='flex justify-center items-center w-28 h-28 my-7 bg-azulBgAluno rounded-full border-black hover:scale-110 transition-all'
               onClick={() => handleCicloClick(selectedCiclo)} // Chama a função ao clicar
               >
-              <img  className='w-12' src={arrow_white} alt="" />
+              <img  className='w-12 rotate-90 sm:rotate-0' src={arrow_white} alt="" />
             </button>
           </div>
           <div className="flex flex-col gap-4">
@@ -597,7 +719,7 @@ const AlunoDashboard: React.FC = () => {
       
 
            
-    </>
+    </div>
   );
 };
 

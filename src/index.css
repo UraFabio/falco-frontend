@@ -2,11 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/* Esconde as barras de rolagem */
+::-webkit-scrollbar {
+  display: none;
+}
+
+
+html, body {
+  height: 100%;
+}
+
+
+
 /* Adiciona uma imagem de fundo à página */
 body {
-  height: 100vh;
+  scrollbar-width: none; /* Esconde as barras de rolagem */
 
-  background-image: url('/sala_01.jpg'); /* Caminho relativo à pasta 'src' */
+
+  background-image: url('/sala_01.jpg');/* Caminho relativo à pasta 'src' */
   background-size: cover; /* Faz a imagem cobrir toda a tela */
   background-position: center; /* Centraliza a imagem */
   background-repeat: no-repeat; /* Evita repetição da imagem */
@@ -16,6 +30,16 @@ body {
   background-blend-mode: overlay; /* Combina a cor de fundo com a imagem */
 
   padding: 2rem;
+}
+
+@media (max-width: 640px) { /* Aplica quando a tela for menor que 640px */
+  body {
+    padding: 10px;
+  }
+
+  html, body {
+    height: 100dvh;
+  }
 }
 
 .sombra-azul {

@@ -7,7 +7,9 @@ const NotFound: React.FC = () => {
   const navigate = useNavigate(); // Inicializa o hook para redirecionamento
 
   const handleVoltar = () => {
-    localStorage.clear()
+    localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_exp');
     navigate('/login')
   }
   
